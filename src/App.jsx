@@ -5,6 +5,7 @@ import ChatPage from './pages/ChatPage';
 import MatchingPage from './pages/MatchingPage';
 import SignupPage from './pages/SignupPage';
 import ProfilePage from './pages/ProfilePage';
+import ExpertPage from './pages/ExpertPage';
 import './styles/global.css';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
         <Route path="/matching" element={<MatchingPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/profile/:id" element={<ProfilePage />} />
+        <Route path="/expert" element={<ExpertPage />} />
       </Routes>
     </Router>
   );
