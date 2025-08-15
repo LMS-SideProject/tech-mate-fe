@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Mate - 전문가 찾기</title>
+    <style>
+        @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
+        :root {
+            --primary-blue: #18c3b7;
+            --primary-dark: rgb(9, 123, 116);
+            --primary-light: #e8f1ff;
+            --purple-gradient-start: #e8d5ff;
+            --purple-gradient-end: #f3e8ff;
+            --blue-gradient-start: #d5e8ff;
+            --blue-gradient-end: #e8f4ff;
+            --black: #000000;
+            --white: #ffffff;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-600: #4b5563;
+            --gray-800: #1f2937;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            line-height: 1.5;
+            color: var(--gray-800);
+            background: var(--gray-50);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .header {
+            background: var(--white);
+            padding: 16px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-blue);
+            text-decoration: none;
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .back-btn {
+            background: var(--gray-100);
+            color: var(--gray-600);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background: var(--gray-200);
+        }
+
+        .main-content {
+            padding: 40px 0;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--gray-800);
+        }
+
+        .page-subtitle {
+            color: var(--gray-600);
+            font-size: 1.1rem;
+        }
+
+        .filters-section {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .filters-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .filters-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .results-count {
+            color: var(--primary-blue);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+
+        .filter-select {
+            padding: 10px 12px;
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 14px;
+            background: var(--white);
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-select:focus {
+            border-color: var(--primary-blue);
+        }
+
+        .category-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 16px 0;
+        }
+
+        .category-tag {
+            background: var(--primary-light);
+            color: var(--primary-blue);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .category-tag.active {
+            background: var(--primary-blue);
+            color: var(--white);
+            border-color: var(--primary-dark);
+        }
+
+        .category-tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(24, 195, 183, 0.3);
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-blue);
+        }
+
+        .experts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .expert-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .expert-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border-color: var(--primary-light);
+        }
+
+        .expert-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .expert-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .expert-info h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--gray-800);
+        }
+
+        .expert-title {
+            color: var(--primary-blue);
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .expert-rating {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 14px;
+            color: var(--gray-600);
+        }
+
+        .stars {
+            color: #fbbf24;
+        }
+
+        .availability {
+            display: inline-block;
+            background: var(--success);
+            color: var(--white);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        .availability.busy {
+            background: var(--warning);
+        }
+
+        .availability.unavailable {
+            background: var(--gray-400);
+        }
+
+        .expert-skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 16px 0;
+        }
+
+        .skill-tag {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .expert-description {
+            color: var(--gray-600);
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 16px 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .expert-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 16px 0;
+            padding: 16px 0;
+            border-top: 1px solid var(--gray-200);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--gray-600);
+            margin-top: 2px;
+        }
+
+        .expert-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-200);
+        }
+
+        .load-more {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .load-more-btn {
+            background: var(--white);
+            color: var(--primary-blue);
+            border: 2px solid var(--primary-blue);
+            border-radius: 12px;
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .load-more-btn:hover {
+            background: var(--primary-blue);
+            color: var(--white);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .empty-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--gray-600);
+            margin-bottom: 8px;
+        }
+
+        .empty-description {
+            color: var(--gray-500);
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 16px;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .experts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .category-tags {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="landing.html" class="logo">Tech Mate</a>
+                <div class="header-nav">
+                    <a href="landing.html" class="back-btn">← 홈으로</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-title">전문가 찾기</h1>
+                <p class="page-subtitle">당신에게 맞는 최고의 전문가를 찾아보세요</p>
+            </div>
+
+            <div class="search-bar">
+                <input type="text" class="search-input" id="searchInput" placeholder="전문가 이름, 기술, 키워드로 검색하세요...">
+            </div>
+
+            <div class="category-tags">
+                <div class="category-tag active" data-category="all">전체</div>
+                <div class="category-tag" data-category="웹 개발">🌐 웹 개발</div>
+                <div class="category-tag" data-category="AI/ML">🤖 AI/ML</div>
+                <div class="category-tag" data-category="모바일 앱">📱 모바일 앱</div>
+                <div class="category-tag" data-category="데이터 분석">📊 데이터 분석</div>
+                <div class="category-tag" data-category="UI/UX">🎨 UI/UX</div>
+                <div class="category-tag" data-category="클라우드">☁️ 클라우드</div>
+                <div class="category-tag" data-category="블록체인">🔗 블록체인</div>
+            </div>
+
+            <div class="filters-section">
+                <div class="filters-header">
+                    <div class="filters-title">필터</div>
+                    <div class="results-count" id="resultsCount">전문가 24명</div>
+                </div>
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label class="filter-label">경력</label>
+                        <select class="filter-select" id="experienceFilter">
+                            <option value="">전체</option>
+                            <option value="junior">1-3년</option>
+                            <option value="mid">4-7년</option>
+                            <option value="senior">8년 이상</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">가격대</label>
+                        <select class="filter-select" id="priceFilter">
+                            <option value="">전체</option>
+                            <option value="low">10-20만원</option>
+                            <option value="mid">20-40만원</option>
+                            <option value="high">40만원 이상</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">가용성</label>
+                        <select class="filter-select" id="availabilityFilter">
+                            <option value="">전체</option>
+                            <option value="available">즉시 가능</option>
+                            <option value="busy">1-2주 후</option>
+                            <option value="unavailable">대기중</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">평점</label>
+                        <select class="filter-select" id="ratingFilter">
+                            <option value="">전체</option>
+                            <option value="5">⭐⭐⭐⭐⭐</option>
+                            <option value="4">⭐⭐⭐⭐ 이상</option>
+                            <option value="3">⭐⭐⭐ 이상</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="experts-grid" id="expertsGrid">
+                <!-- 전문가 카드들이 동적으로 삽입됩니다 -->
+            </div>
+
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div class="empty-icon">🔍</div>
+                <div class="empty-title">검색 결과가 없습니다</div>
+                <div class="empty-description">다른 조건으로 검색해보세요</div>
+            </div>
+
+            <div class="load-more">
+                <button class="load-more-btn" id="loadMoreBtn">더 많은 전문가 보기</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 가상 전문가 데이터
+        const expertsData = [
+            {
+                id: 1,
+                name: "김준호",
+                title: "풀스택 웹 개발자",
+                category: "웹 개발",
+                avatar: "김",
+                rating: 4.9,
+                reviewCount: 127,
+                students: 127,
+                completionTime: "3주",
+                price: 25,
+                skills: ["React", "Node.js", "쇼핑몰 제작", "초보자 교육"],
+                description: "5년간 이커머스 개발 경험으로 100개 이상의 쇼핑몰을 제작했습니다. 초보자도 이해하기 쉬운 맞춤형 강의로 실무 활용 가능한 결과물을 만들어드립니다.",
+                experience: "senior",
+                availability: "available"
+            },
+            {
+                id: 2,
+                name: "박서현",
+                title: "UI/UX & 프론트엔드 개발자",
+                category: "UI/UX",
+                avatar: "박",
+                rating: 4.8,
+                reviewCount: 89,
+                students: 89,
+                completionTime: "4주",
+                price: 22,
+                skills: ["Figma", "React", "디자인 시스템", "사용자 경험"],
+                description: "디자인과 개발을 모두 다루는 멀티 플레이어입니다. 사용자 경험을 중시한 아름답고 실용적인 서비스 제작을 도와드립니다.",
+                experience: "mid",
+                availability: "available"
+            },
+            {
+                id: 3,
+                name: "이동욱",
+                title: "백엔드 & 데이터베이스 전문가",
+                category: "웹 개발",
+                avatar: "이",
+                rating: 4.7,
+                reviewCount: 156,
+                students: 156,
+                completionTime: "5주",
+                price: 28,
+                skills: ["Python", "Django", "MySQL", "AWS"],
+                description: "안정적이고 확장 가능한 백엔드 시스템 구축 전문가입니다. 대용량 데이터 처리와 클라우드 인프라까지 완벽하게 구현해드립니다.",
+                experience: "senior",
+                availability: "busy"
+            },
+            {
+                id: 4,
+                name: "정미영",
+                title: "AI/ML 엔지니어",
+                category: "AI/ML",
+                avatar: "정",
+                rating: 4.9,
+                reviewCount: 203,
+                students: 203,
+                completionTime: "6주",
+                price: 35,
+                skills: ["Python", "TensorFlow", "PyTorch", "딥러닝"],
+                description: "AI 모델 개발부터 실제 서비스 배포까지, 인공지능을 활용한 실무 프로젝트를 완성할 수 있도록 도와드립니다.",
+                experience: "senior",
+                availability: "available"
+            },
+            {
+                id: 5,
+                name: "최원석",
+                title: "모바일 앱 개발자",
+                category: "모바일 앱",
+                avatar: "최",
+                rating: 4.6,
+                reviewCount: 94,
+                students: 94,
+                completionTime: "7주",
+                price: 30,
+                skills: ["Flutter", "React Native", "iOS", "Android"],
+                description: "크로스플랫폼 모바일 앱 개발 전문가입니다. 하나의 코드로 iOS와 Android 모두 지원하는 앱을 만들어보세요.",
+                experience: "mid",
+                availability: "available"
+            },
+            {
+                id: 6,
+                name: "강혜진",
+                title: "데이터 분석가",
+                category: "데이터 분석",
+                avatar: "강",
+                rating: 4.8,
+                reviewCount: 112,
+                students: 112,
+                completionTime: "4주",
+                price: 26,
+                skills: ["Python", "R", "Tableau", "SQL"],
+                description: "비즈니스 인사이트를 찾는 데이터 분석 전문가입니다. 데이터 수집부터 시각화까지 실무에서 바로 활용할 수 있는 분석 기술을 배워보세요.",
+                experience: "mid",
+                availability: "busy"
+            },
+            {
+                id: 7,
+                name: "임재현",
+                title: "클라우드 아키텍트",
+                category: "클라우드",
+                avatar: "임",
+                rating: 4.9,
+                reviewCount: 87,
+                students: 87,
+                completionTime: "5주",
+                price: 32,
+                skills: ["AWS", "Docker", "Kubernetes", "DevOps"],
+                description: "클라우드 인프라 설계와 DevOps 자동화 전문가입니다. 안정적이고 확장 가능한 시스템 구축 방법을 알려드립니다.",
+                experience: "senior",
+                availability: "available"
+            },
+            {
+                id: 8,
+                name: "윤소영",
+                title: "블록체인 개발자",
+                category: "블록체인",
+                avatar: "윤",
+                rating: 4.5,
+                reviewCount: 65,
+                students: 65,
+                completionTime: "8주",
+                price: 40,
+                skills: ["Solidity", "Web3", "Ethereum", "DApp"],
+                description: "블록체인 기술과 스마트 컨트랙트 개발 전문가입니다. DeFi, NFT 등 실제 블록체인 프로젝트를 함께 만들어보세요.",
+                experience: "mid",
+                availability: "unavailable"
+            },
+            {
+                id: 9,
+                name: "홍민수",
+                title: "게임 개발자",
+                category: "게임 개발",
+                avatar: "홍",
+                rating: 4.7,
+                reviewCount: 78,
+                students: 78,
+                completionTime: "6주",
+                price: 29,
+                skills: ["Unity", "C#", "2D/3D 게임", "모바일 게임"],
+                description: "Unity를 활용한 모바일 게임 개발 전문가입니다. 기획부터 출시까지 완성도 높은 게임을 만드는 과정을 배워보세요.",
+                experience: "mid",
+                availability: "available"
+            },
+            {
+                id: 10,
+                name: "송지은",
+                title: "IoT 엔지니어",
+                category: "IoT",
+                avatar: "송",
+                rating: 4.6,
+                reviewCount: 52,
+                students: 52,
+                completionTime: "5주",
+                price: 27,
+                skills: ["Arduino", "Raspberry Pi", "센서", "임베디드"],
+                description: "IoT와 임베디드 시스템 개발 전문가입니다. 하드웨어와 소프트웨어를 연결하는 실무 프로젝트를 경험해보세요.",
+                experience: "mid",
+                availability: "busy"
+            },
+            {
+                id: 11,
+                name: "안준형",
+                title: "보안 전문가",
+                category: "사이버보안",
+                avatar: "안",
+                rating: 4.8,
+                reviewCount: 95,
+                students: 95,
+                completionTime: "4주",
+                price: 31,
+                skills: ["해킹", "보안", "펜테스팅", "네트워크"],
+                description: "사이버보안과 해킹 방어 전문가입니다. 실제 보안 취약점을 찾고 방어하는 실무 기술을 배워보세요.",
+                experience: "senior",
+                availability: "available"
+            },
+            {
+                id: 12,
+                name: "오현아",
+                title: "디지털 마케팅 전문가",
+                category: "마케팅",
+                avatar: "오",
+                rating: 4.7,
+                reviewCount: 143,
+                students: 143,
+                completionTime: "3주",
+                price: 19,
+                skills: ["SEO", "광고", "소셜미디어", "분석"],
+                description: "디지털 마케팅과 성장 해킹 전문가입니다. 데이터 기반의 마케팅 전략으로 실제 비즈니스 성과를 만들어보세요.",
+                experience: "mid",
+                availability: "available"
+            },
+            {
+                id: 13,
+                name: "장수호",
+                title: "3D 모델링 전문가",
+                category: "3D/VR",
+                avatar: "장",
+                rating: 4.5,
+                reviewCount: 67,
+                students: 67,
+                completionTime: "6주",
+                price: 24,
+                skills: ["Blender", "Maya", "3D 프린팅", "VR"],
+                description: "3D 모델링과 VR 콘텐츠 제작 전문가입니다. 창의적인 3D 작품을 만들고 VR 경험을 개발해보세요.",
+                experience: "mid",
+                availability: "busy"
+            },
+            {
+                id: 14,
+                name: "김나리",
+                title: "콘텐츠 크리에이터",
+                category: "콘텐츠",
+                avatar: "김",
+                rating: 4.9,
+                reviewCount: 201,
+                students: 201,
+                completionTime: "2주",
+                price: 18,
+                skills: ["영상 편집", "포토샵", "브랜딩", "스토리텔링"],
+                description: "디지털 콘텐츠 제작과 브랜딩 전문가입니다. 매력적인 콘텐츠로 브랜드 가치를 높이는 방법을 알려드립니다.",
+                experience: "mid",
+                availability: "available"
+            },
+            {
+                id: 15,
+                name: "박기성",
+                title: "로봇공학 엔지니어",
+                category: "로봇공학",
+                avatar: "박",
+                rating: 4.6,
+                reviewCount: 43,
+                students: 43,
+                completionTime: "8주",
+                price: 38,
+                skills: ["ROS", "Python", "센서", "자율주행"],
+                description: "로봇공학과 자율주행 기술 전문가입니다. 실제 로봇을 제어하고 AI를 접목한 지능형 시스템을 만들어보세요.",
+                experience: "senior",
+                availability: "unavailable"
+            }
+        ];
+
+        let currentExperts = [...expertsData];
+        let displayedExperts = [];
+        let currentPage = 1;
+        const expertsPerPage = 9;
+
+        // 페이지 로드시 초기화
+        window.addEventListener('DOMContentLoaded', function() {
+            initializePage();
+            renderExperts();
+            setupEventListeners();
+        });
+
+        function initializePage() {
+            // URL 파라미터에서 카테고리 확인
+            const urlParams = new URLSearchParams(window.location.search);
+            const category = urlParams.get('category');
+            
+            if (category) {
+                // 카테고리 태그 활성화
+                document.querySelectorAll('.category-tag').forEach(tag => {
+                    tag.classList.remove('active');
+                    if (tag.dataset.category === category) {
+                        tag.classList.add('active');
+                    }
+                });
+                filterByCategory(category);
+            }
+        }
+
+        function setupEventListeners() {
+            // 검색 입력
+            document.getElementById('searchInput').addEventListener('input', handleSearch);
+            
+            // 카테고리 태그 클릭
+            document.querySelectorAll('.category-tag').forEach(tag => {
+                tag.addEventListener('click', function() {
+                    document.querySelectorAll('.category-tag').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    filterByCategory(this.dataset.category);
+                });
+            });
+            
+            // 필터 변경
+            document.getElementById('experienceFilter').addEventListener('change', applyFilters);
+            document.getElementById('priceFilter').addEventListener('change', applyFilters);
+            document.getElementById('availabilityFilter').addEventListener('change', applyFilters);
+            document.getElementById('ratingFilter').addEventListener('change', applyFilters);
+            
+            // 더보기 버튼
+            document.getElementById('loadMoreBtn').addEventListener('click', loadMore);
+        }
+
+        function handleSearch() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            currentExperts = expertsData.filter(expert => 
+                expert.name.toLowerCase().includes(searchTerm) ||
+                expert.title.toLowerCase().includes(searchTerm) ||
+                expert.skills.some(skill => skill.toLowerCase().includes(searchTerm)) ||
+                expert.description.toLowerCase().includes(searchTerm)
+            );
+            applyFilters();
+        }
+
+        function filterByCategory(category) {
+            if (category === 'all') {
+                currentExperts = [...expertsData];
+            } else {
+                currentExperts = expertsData.filter(expert => expert.category === category);
+            }
+            applyFilters();
+        }
+
+        function applyFilters() {
+            let filteredExperts = [...currentExperts];
+            
+            // 경력 필터
+            const experience = document.getElementById('experienceFilter').value;
+            if (experience) {
+                filteredExperts = filteredExperts.filter(expert => expert.experience === experience);
+            }
+            
+            // 가격 필터
+            const priceRange = document.getElementById('priceFilter').value;
+            if (priceRange) {
+                filteredExperts = filteredExperts.filter(expert => {
+                    switch (priceRange) {
+                        case 'low': return expert.price <= 20;
+                        case 'mid': return expert.price > 20 && expert.price <= 40;
+                        case 'high': return expert.price > 40;
+                        default: return true;
+                    }
+                });
+            }
+            
+            // 가용성 필터
+            const availability = document.getElementById('availabilityFilter').value;
+            if (availability) {
+                filteredExperts = filteredExperts.filter(expert => expert.availability === availability);
+            }
+            
+            // 평점 필터
+            const rating = document.getElementById('ratingFilter').value;
+            if (rating) {
+                const minRating = parseFloat(rating);
+                filteredExperts = filteredExperts.filter(expert => expert.rating >= minRating);
+            }
+            
+            displayedExperts = filteredExperts;
+            currentPage = 1;
+            renderExperts();
+            updateResultsCount();
+        }
+
+        function renderExperts() {
+            const expertsGrid = document.getElementById('expertsGrid');
+            const emptyState = document.getElementById('emptyState');
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            
+            if (displayedExperts.length === 0) {
+                expertsGrid.innerHTML = '';
+                emptyState.style.display = 'block';
+                loadMoreBtn.style.display = 'none';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            const startIndex = (currentPage - 1) * expertsPerPage;
+            const endIndex = Math.min(startIndex + expertsPerPage, displayedExperts.length);
+            const expertsToShow = displayedExperts.slice(0, endIndex);
+            
+            expertsGrid.innerHTML = expertsToShow.map(expert => createExpertCard(expert)).join('');
+            
+            // 더보기 버튼 표시/숨김
+            if (endIndex >= displayedExperts.length) {
+                loadMoreBtn.style.display = 'none';
+            } else {
+                loadMoreBtn.style.display = 'block';
+            }
+        }
+
+        function createExpertCard(expert) {
+            const availabilityText = {
+                'available': '즉시 가능',
+                'busy': '1-2주 후',
+                'unavailable': '대기중'
+            };
+            
+            const availabilityClass = expert.availability === 'available' ? '' : 
+                expert.availability === 'busy' ? 'busy' : 'unavailable';
+            
+            return `
+                <div class="expert-card">
+                    <div class="expert-header">
+                        <div class="expert-avatar">${expert.avatar}</div>
+                        <div class="expert-info">
+                            <h3>${expert.name}</h3>
+                            <div class="expert-title">${expert.title}</div>
+                            <div class="expert-rating">
+                                <span class="stars">⭐⭐⭐⭐⭐</span>
+                                <span>${expert.rating} (${expert.reviewCount}명)</span>
+                            </div>
+                        </div>
+                        <div class="availability ${availabilityClass}">
+                            ${availabilityText[expert.availability]}
+                        </div>
+                    </div>
+                    
+                    <div class="expert-skills">
+                        ${expert.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                    </div>
+                    
+                    <p class="expert-description">${expert.description}</p>
+                    
+                    <div class="expert-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">${expert.students}</div>
+                            <div class="stat-label">수강생</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">${expert.completionTime}</div>
+                            <div class="stat-label">평균 완성</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">${expert.price}만원</div>
+                            <div class="stat-label">수강료</div>
+                        </div>
+                    </div>
+                    
+                    <div class="expert-actions">
+                        <button class="btn-primary" onclick="contactExpert('${expert.name}')">연락하기</button>
+                        <button class="btn-secondary" onclick="viewProfile(${expert.id})">프로필 보기</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateResultsCount() {
+            const count = displayedExperts.length;
+            document.getElementById('resultsCount').textContent = `전문가 ${count}명`;
+        }
+
+        function loadMore() {
+            currentPage++;
+            renderExperts();
+        }
+
+        function contactExpert(name) {
+            // 로그인 확인
+            const userType = localStorage.getItem('userType');
+            if (!userType) {
+                if (confirm(`${name} 전문가에게 연락하려면 로그인이 필요합니다. 로그인 하시겠습니까?`)) {
+                    localStorage.setItem('userType', 'learner');
+                    localStorage.setItem('userName', '김철수');
+                    alert('로그인되었습니다!');
+                }
+            }
+            
+            alert(`${name} 전문가에게 연락을 보냈습니다. 곧 답변을 받으실 수 있습니다!`);
+        }
+
+        function viewProfile(expertId) {
+            const expert = expertsData.find(e => e.id === expertId);
+            alert(`${expert.name} 전문가의 상세 프로필을 확인하세요.\n\n` +
+                  `전문분야: ${expert.title}\n` +
+                  `평점: ${expert.rating}/5.0\n` +
+                  `경력: ${expert.experience === 'senior' ? '8년 이상' : expert.experience === 'mid' ? '4-7년' : '1-3년'}\n` +
+                  `수강료: ${expert.price}만원`);
+        }
+
+        // 초기 렌더링
+        renderExperts();
+        updateResultsCount();
+    </script>
+</body>
+
+</html>

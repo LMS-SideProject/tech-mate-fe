@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Mate - AI 기반 맞춤형 기술 교육 플랫폼</title>
+    <style>
+        @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
+        :root {
+            --primary-blue: #18c3b7;
+            --primary-dark: rgb(9, 123, 116);
+            --primary-light: #e8f1ff;
+            --purple-gradient-start: #e8d5ff;
+            --purple-gradient-end: #f3e8ff;
+            --blue-gradient-start: #d5e8ff;
+            --blue-gradient-end: #e8f4ff;
+            --black: #000000;
+            --white: #ffffff;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-400: #9ca3af;
+            --gray-600: #4b5563;
+            --gray-800: #1f2937;
+            --success: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            line-height: 1.5;
+            color: var(--gray-800);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, var(--blue-gradient-start), var(--blue-gradient-end));
+            padding: 120px 0 80px 0;
+            position: relative;
+        }
+
+        .hero-content {
+            text-align: center;
+            z-index: 2;
+            position: relative;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            margin-bottom: 24px;
+            color: var(--gray-800);
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--gray-600);
+            margin-bottom: 48px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 32px auto;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 20px 24px;
+            border: none;
+            border-radius: 16px;
+            font-size: 18px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            background: var(--white);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            box-shadow: 0 8px 16px -4px rgba(24, 195, 183, 0.4);
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            margin: 0 8px;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px -4px rgba(24, 195, 183, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-800);
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 14px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            margin: 0 8px;
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-200);
+            border-color: var(--gray-300);
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .category-card {
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .category-card:hover {
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1);
+        }
+
+        .section {
+            padding: 80px 0;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 60px;
+            color: var(--gray-800);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, var(--purple-gradient-start), var(--purple-gradient-end));
+            border-radius: 24px;
+            padding: 32px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--primary-blue);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px auto;
+            font-size: 32px;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--gray-800);
+        }
+
+        .feature-description {
+            color: var(--gray-600);
+            line-height: 1.6;
+        }
+
+        .dark-section {
+            background: var(--black);
+            color: var(--white);
+        }
+
+        .dark-section .section-title {
+            color: var(--white);
+        }
+
+        .review-slider {
+            overflow: hidden;
+            margin: 40px 0;
+        }
+
+        .review-track {
+            display: flex;
+            animation: slide 30s linear infinite;
+            gap: 24px;
+        }
+
+        @keyframes slide {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .review-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            min-width: 300px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .reviewer-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .reviewer-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--primary-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .stars {
+            color: #fbbf24;
+            margin-bottom: 12px;
+        }
+
+        .growth-badge {
+            display: inline-block;
+            background: var(--success);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, var(--purple-gradient-start), var(--purple-gradient-end));
+            padding: 80px 0;
+        }
+
+        .cta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 32px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .cta-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .cta-card:hover {
+            transform: translateY(-8px);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .container {
+                padding: 0 16px;
+            }
+
+            .cta-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .category-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 32px;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: var(--gray-600);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-menu a:hover {
+            color: var(--primary-blue);
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-container">
+                <div class="logo">Tech Mate</div>
+                <ul class="nav-menu">
+                    <li><a href="#home">홈</a></li>
+                    <li><a href="#services">서비스</a></li>
+                    <li><a href="#experts">전문가</a></li>
+                    <li><a href="#reviews">후기</a></li>
+                    <li><a href="#contact">문의</a></li>
+                </ul>
+                <div>
+                    <a href="#" class="btn-secondary">로그인</a>
+                    <a href="#" class="btn-primary">시작하기</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">AI와 함께하는<br>맞춤형 기술 교육</h1>
+                <p class="hero-subtitle">
+                    원하는 분야의 전문가와 1:1 매칭으로<br>
+                    실무 중심의 교육을 받고 직접 만들어보세요
+                </p>
+
+                <div class="search-container">
+                    <input type="text" class="search-input" placeholder="어떤 기술을 배우고 싶나요? (예: AI 이미지 생성, 웹사이트 제작)">
+                </div>
+
+                <div style="margin-bottom: 48px;">
+                    <button class="btn-primary" onclick="goToMatching()">AI 상담 시작하기</button>
+                    <button class="btn-secondary" onclick="goToExpertList()">전문가 찾아보기</button>
+                </div>
+
+                <div class="category-grid" id="categoryGrid" style="display: none;">
+                    <div class="category-card" onclick="goToExpertListByCategory('웹 개발')">
+                        <div>🌐</div>
+                        <div>웹 개발</div>
+                    </div>
+                    <div class="category-card" onclick="goToExpertListByCategory('AI/ML')">
+                        <div>🤖</div>
+                        <div>AI/ML</div>
+                    </div>
+                    <div class="category-card" onclick="goToExpertListByCategory('모바일 앱')">
+                        <div>📱</div>
+                        <div>모바일 앱</div>
+                    </div>
+                    <div class="category-card" onclick="goToExpertListByCategory('데이터 분석')">
+                        <div>📊</div>
+                        <div>데이터 분석</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Service Introduction Section -->
+    <section id="services" class="section">
+        <div class="container">
+            <h2 class="section-title">AI 기술로 더 스마트한 교육</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3 class="feature-title">맞춤형 매칭</h3>
+                    <p class="feature-description">AI가 분석한 당신의 목표와 현재 수준에 맞는 최적의 전문가를 매칭해드립니다.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💡</div>
+                    <h3 class="feature-title">실무 중심 교육</h3>
+                    <p class="feature-description">이론만이 아닌 실제로 만들어보며 배우는 프로젝트 기반 교육을 제공합니다.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3 class="feature-title">성장 추적</h3>
+                    <p class="feature-description">학습 진행도와 성과를 실시간으로 추적하여 지속적인 성장을 도와드립니다.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Education Section -->
+    <section class="section" style="background: var(--gray-50);">
+        <div class="container">
+            <h2 class="section-title">교육, 그 이상의 가치</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🛠️</div>
+                    <h3 class="feature-title">내 손으로 만드는 결과물</h3>
+                    <p class="feature-description">일회성 외주가 아닌, 스스로 만들 수 있는 능력을 기르는 것이 목표입니다.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3 class="feature-title">AI 이미지 & 컨텐츠</h3>
+                    <p class="feature-description">Midjourney, DALL-E 등을 활용한 AI 이미지 생성부터 컨텐츠 제작까지</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💻</div>
+                    <h3 class="feature-title">웹사이트 & 앱 개발</h3>
+                    <p class="feature-description">기획부터 배포까지, 실제 서비스를 만들어보는 완전한 개발 경험</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section id="reviews" class="section dark-section">
+        <div class="container">
+            <h2 class="section-title">성공한 수강생들의 이야기</h2>
+            <div class="review-slider">
+                <div class="review-track">
+                    <div class="review-card">
+                        <div class="reviewer-info">
+                            <div class="reviewer-avatar">김</div>
+                            <div>
+                                <div style="font-weight: 600;">김민수</div>
+                                <div style="font-size: 14px; color: #9ca3af;">카페 사장</div>
+                            </div>
+                        </div>
+                        <div class="stars">⭐⭐⭐⭐⭐</div>
+                        <p>"AI 이미지로 메뉴판을 직접 만들어서 매출이 크게 늘었어요!"</p>
+                        <div class="growth-badge">매출 200% 증가</div>
+                    </div>
+
+                    <div class="review-card">
+                        <div class="reviewer-info">
+                            <div class="reviewer-avatar">박</div>
+                            <div>
+                                <div style="font-weight: 600;">박지영</div>
+                                <div style="font-size: 14px; color: #9ca3af;">마케터</div>
+                            </div>
+                        </div>
+                        <div class="stars">⭐⭐⭐⭐⭐</div>
+                        <p>"웹사이트 제작을 배워서 우리 회사 홈페이지를 직접 만들었습니다."</p>
+                        <div class="growth-badge">개발 역량 획득</div>
+                    </div>
+
+                    <div class="review-card">
+                        <div class="reviewer-info">
+                            <div class="reviewer-avatar">이</div>
+                            <div>
+                                <div style="font-weight: 600;">이동훈</div>
+                                <div style="font-size: 14px; color: #9ca3af;">온라인 쇼핑몰 운영</div>
+                            </div>
+                        </div>
+                        <div class="stars">⭐⭐⭐⭐⭐</div>
+                        <p>"데이터 분석을 배워 고객 패턴을 파악하고 매출을 최적화했어요."</p>
+                        <div class="growth-badge">전환율 150% 상승</div>
+                    </div>
+
+                    <div class="review-card">
+                        <div class="reviewer-info">
+                            <div class="reviewer-avatar">최</div>
+                            <div>
+                                <div style="font-weight: 600;">최서연</div>
+                                <div style="font-size: 14px; color: #9ca3af;">프리랜서 디자이너</div>
+                            </div>
+                        </div>
+                        <div class="stars">⭐⭐⭐⭐⭐</div>
+                        <p>"AI 도구들을 활용해서 작업 효율성이 3배 향상되었습니다."</p>
+                        <div class="growth-badge">작업 효율 300% 증가</div>
+                    </div>
+
+                    <!-- 슬라이더 연속성을 위한 복사본 -->
+                    <div class="review-card">
+                        <div class="reviewer-info">
+                            <div class="reviewer-avatar">김</div>
+                            <div>
+                                <div style="font-weight: 600;">김민수</div>
+                                <div style="font-size: 14px; color: #9ca3af;">카페 사장</div>
+                            </div>
+                        </div>
+                        <div class="stars">⭐⭐⭐⭐⭐</div>
+                        <p>"AI 이미지로 메뉴판을 직접 만들어서 매출이 크게 늘었어요!"</p>
+                        <div class="growth-badge">매출 200% 증가</div>
+                    </div>
+
+                    <div class="review-card">
+                        <div class="reviewer-info">
+                            <div class="reviewer-avatar">박</div>
+                            <div>
+                                <div style="font-weight: 600;">박지영</div>
+                                <div style="font-size: 14px; color: #9ca3af;">마케터</div>
+                            </div>
+                        </div>
+                        <div class="stars">⭐⭐⭐⭐⭐</div>
+                        <p>"웹사이트 제작을 배워서 우리 회사 홈페이지를 직접 만들었습니다."</p>
+                        <div class="growth-badge">개발 역량 획득</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2 class="section-title">지금 시작하세요</h2>
+            <div class="cta-grid">
+                <div class="cta-card">
+                    <div class="feature-icon">🎓</div>
+                    <h3 class="feature-title">학습자로 시작</h3>
+                    <p class="feature-description">새로운 기술을 배우고 싶다면<br>전문가와 매칭받으세요</p>
+                    <button class="btn-primary" onclick="startAsLearner()" style="margin-top: 24px;">학습자 회원가입</button>
+                </div>
+                <div class="cta-card">
+                    <div class="feature-icon">👨‍💻</div>
+                    <h3 class="feature-title">전문가로 등록</h3>
+                    <p class="feature-description">당신의 지식을 나누고<br>수익을 창출하세요</p>
+                    <button class="btn-primary" onclick="startAsExpert()" style="margin-top: 24px;">전문가 회원가입</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        function showCategories() {
+            const grid = document.getElementById('categoryGrid');
+            grid.style.display = grid.style.display === 'none' ? 'grid' : 'none';
+        }
+
+        function selectCategory(category) {
+            document.querySelector('.search-input').value = category;
+            goToMatching();
+        }
+
+        function goToMatching() {
+            // AI 상담 채팅 페이지로 이동
+            window.location.href = 'chat.html';
+        }
+
+        function goToExpertList() {
+            // 전체 전문가 리스트 페이지로 이동
+            window.location.href = 'experts.html';
+        }
+
+        function goToExpertListByCategory(category) {
+            // 카테고리별 전문가 리스트 페이지로 이동
+            window.location.href = `experts.html?category=${encodeURIComponent(category)}`;
+        }
+
+        function startAsLearner() {
+            // 학습자 회원가입/로그인 로직
+            localStorage.setItem('userType', 'learner');
+            alert('학습자로 로그인되었습니다!');
+            window.location.href = 'matching.html';
+        }
+
+        function startAsExpert() {
+            // 전문가 회원가입/로그인 로직
+            localStorage.setItem('userType', 'expert');
+            alert('전문가 등록 페이지로 이동합니다.');
+        }
+
+        // 스크롤 애니메이션
+        window.addEventListener('scroll', function() {
+            const cards = document.querySelectorAll('.feature-card, .review-card');
+            cards.forEach(card => {
+                const cardTop = card.getBoundingClientRect().top;
+                if (cardTop < window.innerHeight - 100) {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }
+            });
+        });
+
+        // 초기 카드 애니메이션 설정
+        document.querySelectorAll('.feature-card, .review-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'all 0.6s ease';
+        });
+    </script>
+</body>
+
+</html>

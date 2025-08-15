@@ -1,12 +1,211 @@
-# React + Vite
+# Tech Mate - AI 기술 교육 매칭 플랫폼
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Tech Mate는 AI 기술을 배우고 싶은 사람과 가르칠 수 있는 전문가를 연결하는 교육 매칭 플랫폼입니다.
 
-Currently, two official plugins are available:
+## 🚀 프로젝트 실행
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+# 의존성 설치
+npm install
 
-## Expanding the ESLint configuration
+# 개발 서버 실행
+npm run dev
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+# 빌드
+npm run build
+
+# 프로덕션 서버 실행
+npm run preview
+```
+
+## 📋 주요 기능
+
+- **AI 상담 시스템**: 챗봇을 통한 맞춤형 교육 커리큘럼 추천
+- **전문가 매칭**: 사용자의 목표와 수준에 맞는 전문가 매칭
+- **실시간 채팅**: 전문가와 학습자 간의 실시간 소통
+- **견적서 시스템**: 자동화된 교육 견적서 생성
+- **진도 관리**: AI를 통한 학습 진도 모니터링
+
+## 🛣️ 라우팅 구조
+
+### 메인 라우트
+
+| 경로             | 컴포넌트           | 설명                   |
+| ---------------- | ------------------ | ---------------------- |
+| `/`              | `LandingPage`      | 메인 랜딩 페이지       |
+| `/login`         | `LoginPage`        | 로그인 페이지          |
+| `/signup`        | `SignupPage`       | 회원가입 페이지        |
+| `/signup/expert` | `ExpertSignupPage` | 전문가 회원가입 페이지 |
+
+### 매칭 및 전문가 관련 라우트
+
+| 경로               | 컴포넌트                | 설명                          |
+| ------------------ | ----------------------- | ----------------------------- |
+| `/matching`        | `MatchingPage`          | AI 상담 및 견적서 작성 페이지 |
+| `/experts`         | `ExpertListPage`        | 전문가 목록 페이지            |
+| `/experts/matched` | `MatchedExpertListPage` | 매칭된 전문가 목록 페이지     |
+
+### 채팅 관련 라우트
+
+| 경로                     | 컴포넌트         | 설명                   |
+| ------------------------ | ---------------- | ---------------------- |
+| `/chat`                  | `ChatPage`       | 채팅 목록 및 기본 채팅 |
+| `/chat/expert/:expertId` | `ExpertChatPage` | 전문가와의 상세 채팅   |
+
+## 📱 페이지 상세 설명
+
+### 1. 랜딩 페이지 (`/`)
+
+- **Hero Section**: 검색창과 카테고리 선택
+- **서비스 소개**: AI 챗봇, 정확한 매칭, 실시간 소통
+- **교육 가치**: 일회성이 아닌 성장 중심의 교육
+- **수강생 후기**: 무한 슬라이드 형태의 성공 스토리
+- **회원가입 CTA**: 구매자/전문가 선택
+
+### 2. 로그인/회원가입 (`/login`, `/signup`)
+
+- **소셜 로그인**: Google, 카카오, 네이버 지원
+- **회원 유형 선택**: 구매자 또는 전문가 선택
+- **로컬스토리지 기반**: 프로토타입용 세션 관리
+
+### 3. 전문가 회원가입 (`/signup/expert`)
+
+- **3단계 진행**: 개인정보 → 경력정보 → 교육분야
+- **AI 분석**: 경력 정보 기반 교육 분야 자동 추천
+- **프로그레스 바**: 단계별 진행 상황 표시
+
+### 4. AI 매칭 상담 (`/matching`)
+
+- **AI 상담 모드**: 단계별 질문을 통한 맞춤 매칭
+- **견적서 작성 모드**: 카테고리 선택 후 바로 견적서 생성
+- **실시간 채팅 UI**: 챗봇 형태의 대화형 인터페이스
+- **견적서 자동 생성**: 사용자 답변 기반 견적서 생성
+
+### 5. 전문가 목록 (`/experts`)
+
+- **카테고리 필터**: 분야별 전문가 필터링
+- **전문가 카드**: 프로필, 평점, 스킬, 요금 정보
+- **프로필 모달**: 상세 정보 및 매칭 요청 기능
+
+### 6. 매칭된 전문가 (`/experts/matched`)
+
+- **견적서 요약**: 상단에 매칭 기준 견적서 표시
+- **매칭률 표시**: 각 전문가별 매칭 확률
+- **모달 네비게이션**: 좌우 화살표로 전문가 간 이동
+
+### 7. 채팅 시스템 (`/chat`, `/chat/expert/:expertId`)
+
+- **대화 목록**: 사이드바에 전문가별 대화 목록
+- **실시간 메시징**: 텍스트 및 파일 첨부 지원
+- **AI 모니터링**: 일정 지연, 범위 이탈 시 경고 메시지
+- **학습 관리 기능**: 진도 확인, 화상 교육 예약
+
+## 🎨 디자인 시스템
+
+### 컬러 팔레트
+
+- **Primary**: `#18c3b7` (터콰이즈)
+- **Secondary**: 그레이 계열
+- **Gradients**: 보라색, 파란색 그라데이션
+
+### 타이포그래피
+
+- **Font**: Pretendard (한국어 최적화)
+- **Size**: 반응형 크기 조절
+
+### 컴포넌트
+
+- **버튼**: Primary, Secondary, Outline 타입
+- **카드**: 일관된 패딩, 그림자 효과
+- **폼**: 통일된 입력 요소 스타일
+- **모달**: 오버레이와 중앙 정렬
+
+## 📊 데이터 구조
+
+### Mock Data
+
+- **전문가 정보**: `src/data/mockData.js`
+- **카테고리**: 8개 주요 기술 분야
+- **리뷰**: 사용자 평가 및 성과 데이터
+- **채팅 메시지**: 대화 시뮬레이션용 데이터
+
+### 상태 관리
+
+- **로컬스토리지**: 사용자 세션 및 로그인 상태
+- **useState**: 컴포넌트별 상태 관리
+- **Props**: 페이지 간 데이터 전달
+
+## 🔧 기술 스택
+
+- **Frontend**: React 18, Vite
+- **Routing**: React Router DOM
+- **Styling**: CSS-in-JS, Custom Design System
+- **Icons**: Unicode Emoji, SVG
+- **Mock Data**: JavaScript Objects
+- **State**: React Hooks
+
+## 📁 프로젝트 구조
+
+```
+src/
+├── components/           # 공통 컴포넌트
+├── pages/               # 페이지 컴포넌트
+│   ├── LandingPage.jsx
+│   ├── LoginPage.jsx
+│   ├── SignupPage.jsx
+│   ├── ExpertSignupPage.jsx
+│   ├── MatchingPage.jsx
+│   ├── ExpertListPage.jsx
+│   ├── MatchedExpertListPage.jsx
+│   ├── ChatPage.jsx
+│   └── ExpertChatPage.jsx
+├── styles/              # 스타일링
+│   ├── design-system.css
+│   └── index.css
+├── data/                # 목 데이터
+│   └── mockData.js
+└── utils/               # 유틸리티 함수
+```
+
+## 🚀 프로토타입 특징
+
+이 프로젝트는 **해커톤 제출용 프로토타입**으로 다음과 같은 특징을 가집니다:
+
+### 가상 데이터 중심
+
+- 실제 API 대신 Mock Data 사용
+- 로컬스토리지 기반 세션 관리
+- 시뮬레이션된 AI 응답
+
+### 데모용 기능
+
+- 버튼 클릭으로 진행되는 채팅 플로우
+- 자동 생성되는 견적서 및 매칭 결과
+- 임시 알림 및 상태 변경
+
+### 기능 시연 최적화
+
+- 빠른 프로세스 진행
+- 시각적 피드백 강화
+- 사용자 여정 명확화
+
+## 🔄 개발 플로우
+
+1. **랜딩 페이지** → 검색 또는 카테고리 선택
+2. **매칭 페이지** → AI 상담 또는 견적서 작성
+3. **전문가 목록** → 매칭된 전문가 확인
+4. **로그인/회원가입** → 매칭 요청을 위한 인증
+5. **채팅** → 전문가와 실시간 소통
+6. **교육 진행** → AI 모니터링 및 진도 관리
+
+## 📝 추가 개발 계획
+
+- [ ] 실제 AI API 연동
+- [ ] 결제 시스템 통합
+- [ ] 화상 교육 기능
+- [ ] 리뷰 및 평가 시스템
+- [ ] 모바일 반응형 최적화
+
+## 📄 라이선스
+
+이 프로젝트는 해커톤 제출용 프로토타입입니다.

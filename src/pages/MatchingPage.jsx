@@ -1,935 +1,479 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { SessionManager } from '../utils/sessionManager';
-import '../styles/global.css';
+import { useState, useEffect, useRef } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { categories, learningKeywords, quotation } from '../data/mockData'
 
-const MatchingPage = () => {
-  const navigate = useNavigate();
-  const [userData, setUserData] = useState({});
-  const [selectedExpert, setSelectedExpert] = useState(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+function MatchingPage() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const chatEndRef = useRef(null)
+  
+  const [chatMode, setChatMode] = useState(null) // 'ai-consult' or 'quotation'
+  const [messages, setMessages] = useState([])
+  const [currentInput, setCurrentInput] = useState('')
+  const [isTyping, setIsTyping] = useState(false)
+  const [currentStep, setCurrentStep] = useState(0)
+  const [formData, setFormData] = useState({
+    goal: '',
+    keywords: [],
+    duration: '',
+    schedule: '',
+    budget: '',
+    currentJob: '',
+    experience: '',
+    category: ''
+  })
 
-  // Mock expert data - in real app this would come from API
-  const experts = [
+  // AI 상담 단계별 질문
+  const aiConsultSteps = [
     {
-      id: 1,
-      name: '김민수',
-      title: 'Senior Frontend Developer',
-      company: '네이버',
-      experience: '7년',
-      avatar: '👨‍💻',
-      rating: 4.9,
-      reviewCount: 127,
-      specialties: ['React', 'JavaScript', 'TypeScript', 'Next.js'],
-      price: '회당 8만원',
-      responseTime: '평균 2시간 내 응답',
-      description: '네이버에서 7년간 프론트엔드 개발을 담당하고 있으며, React 생태계 전문가입니다. 초보자부터 중급자까지 단계별 맞춤 교육이 가능합니다.',
-      matchPercentage: 95,
-      schedule: ['평일 저녁', '주말'],
-      method: '온라인/오프라인'
+      question: '어떤 것을 만들고 싶으신가요?',
+      type: 'text',
+      placeholder: '예: 쇼핑몰 웹사이트, AI 이미지 생성 도구, 데이터 분석 대시보드'
     },
     {
-      id: 2,
-      name: '박지영',
-      title: 'Full Stack Developer',
-      company: '카카오',
-      experience: '5년',
-      avatar: '👩‍💻',
-      rating: 4.8,
-      reviewCount: 89,
-      specialties: ['Python', 'Django', 'AWS', 'React'],
-      price: '회당 7만원',
-      responseTime: '평균 1시간 내 응답',
-      description: '카카오에서 백엔드와 프론트엔드를 모두 다루는 풀스택 개발자입니다. 실무 중심의 프로젝트 기반 학습을 지향합니다.',
-      matchPercentage: 88,
-      schedule: ['평일 오후', '주말'],
-      method: '온라인'
+      question: '추천된 학습 키워드 중에서 관심 있는 것을 선택해주세요:',
+      type: 'keywords',
+      options: learningKeywords
     },
     {
-      id: 3,
-      name: '이준호',
-      title: 'DevOps Engineer',
-      company: '쿠팡',
-      experience: '6년',
-      avatar: '👨‍🔧',
-      rating: 4.7,
-      reviewCount: 156,
-      specialties: ['AWS', 'Docker', 'Kubernetes', 'CI/CD'],
-      price: '회당 9만원',
-      responseTime: '평균 3시간 내 응답',
-      description: '대규모 트래픽 처리 경험이 풍부한 DevOps 전문가입니다. 클라우드 인프라부터 배포 자동화까지 체계적으로 가르쳐드립니다.',
-      matchPercentage: 82,
-      schedule: ['평일 저녁', '주말 오전'],
-      method: '온라인/오프라인'
+      question: '희망하는 학습 기간은 어느 정도인가요?',
+      type: 'buttons',
+      options: ['1개월', '3개월', '6개월', '1년']
+    },
+    {
+      question: '일정은 어떻게 원하시나요?',
+      type: 'buttons',
+      options: ['주 1회 2시간', '주 2회 2시간', '주 3회 1시간', '매일 1시간']
+    },
+    {
+      question: '예산은 어느 정도 생각하고 계신가요?',
+      type: 'buttons',
+      options: ['50만원 이하', '50-100만원', '100-200만원', '200만원 이상']
+    },
+    {
+      question: '현재 직무가 어떻게 되시나요?',
+      type: 'text',
+      placeholder: '예: 마케팅 담당자, 디자이너, 개발자, 학생'
+    },
+    {
+      question: '프로그래밍 경험은 어느 정도이신가요?',
+      type: 'buttons',
+      options: ['초급 (경험 없음)', '중급 (기초 지식)', '고급 (실무 경험)']
     }
-  ];
+  ]
 
   useEffect(() => {
-    // Load user data from session
-    const sessionData = SessionManager.getUserData();
-    setUserData(sessionData);
-    
-    // Check login status
-    setIsLoggedIn(SessionManager.isLoggedIn());
-  }, []);
-
-  const handleViewProfile = (expert) => {
-    // Save selected expert to session
-    SessionManager.updateUserData({ selectedExpert: expert });
-    
-    if (isLoggedIn) {
-      navigate(`/profile/${expert.id}`);
+    const initialQuery = location.state?.query
+    if (initialQuery) {
+      setMessages([
+        {
+          id: 1,
+          type: 'bot',
+          message: `"${initialQuery}"에 대해 도움을 드리겠습니다! 어떤 방식으로 진행하시겠습니까?`,
+          timestamp: new Date().toLocaleTimeString().slice(0, 5),
+          options: [
+            { text: 'AI 상담받기', value: 'ai-consult' },
+            { text: '견적서 바로 작성', value: 'quotation' }
+          ]
+        }
+      ])
     } else {
-      // Redirect to signup with return path
-      navigate(`/signup?returnTo=/profile/${expert.id}`);
+      setMessages([
+        {
+          id: 1,
+          type: 'bot',
+          message: '안녕하세요! Tech Mate AI 상담사입니다. 어떤 방식으로 도움을 드릴까요?',
+          timestamp: new Date().toLocaleTimeString().slice(0, 5),
+          options: [
+            { text: 'AI 상담받기', value: 'ai-consult' },
+            { text: '견적서 바로 작성', value: 'quotation' }
+          ]
+        }
+      ])
     }
-  };
+  }, [location.state])
 
-  const handleMatchRequest = (expert) => {
-    setSelectedExpert(expert);
-    SessionManager.updateUserData({ selectedExpert: expert });
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  const handleOptionClick = (option) => {
+    const userMessage = {
+      id: messages.length + 1,
+      type: 'user',
+      message: option.text,
+      timestamp: new Date().toLocaleTimeString().slice(0, 5)
+    }
+    setMessages(prev => [...prev, userMessage])
+
+    if (option.value === 'ai-consult') {
+      setChatMode('ai-consult')
+      setTimeout(() => {
+        const botMessage = {
+          id: messages.length + 2,
+          type: 'bot',
+          message: aiConsultSteps[0].question,
+          timestamp: new Date().toLocaleTimeString().slice(0, 5)
+        }
+        setMessages(prev => [...prev, botMessage])
+      }, 1000)
+    } else if (option.value === 'quotation') {
+      setChatMode('quotation')
+      setTimeout(() => {
+        const botMessage = {
+          id: messages.length + 2,
+          type: 'bot',
+          message: '어떤 분야의 견적서를 작성하시겠습니까?',
+          timestamp: new Date().toLocaleTimeString().slice(0, 5),
+          categories: categories
+        }
+        setMessages(prev => [...prev, botMessage])
+      }, 1000)
+    }
+  }
+
+  const handleSendMessage = (message) => {
+    const userMessage = {
+      id: messages.length + 1,
+      type: 'user',
+      message: message,
+      timestamp: new Date().toLocaleTimeString().slice(0, 5)
+    }
+    setMessages(prev => [...prev, userMessage])
+    setCurrentInput('')
+    setIsTyping(true)
+
+    if (chatMode === 'ai-consult') {
+      handleAIConsultFlow(message)
+    } else if (chatMode === 'quotation') {
+      handleQuotationFlow(message)
+    }
+  }
+
+  const handleAIConsultFlow = (message) => {
+    const step = aiConsultSteps[currentStep]
+    const newFormData = { ...formData }
+
+    if (currentStep === 0) {
+      newFormData.goal = message
+    }
+
+    setFormData(newFormData)
+
+    setTimeout(() => {
+      setIsTyping(false)
+      
+      if (currentStep < aiConsultSteps.length - 1) {
+        const nextStep = currentStep + 1
+        setCurrentStep(nextStep)
+        
+        const botMessage = {
+          id: messages.length + 2,
+          type: 'bot',
+          message: aiConsultSteps[nextStep].question,
+          timestamp: new Date().toLocaleTimeString().slice(0, 5),
+          stepType: aiConsultSteps[nextStep].type,
+          options: aiConsultSteps[nextStep].options
+        }
+        setMessages(prev => [...prev, botMessage])
+      } else {
+        // AI 상담 완료 - 견적서 생성
+        generateQuotation()
+      }
+    }, 1500)
+  }
+
+  const handleQuotationFlow = (categoryName) => {
+    setTimeout(() => {
+      setIsTyping(false)
+      generateDirectQuotation(categoryName)
+    }, 1500)
+  }
+
+  const generateQuotation = () => {
+    const botMessage = {
+      id: messages.length + 2,
+      type: 'bot',
+      message: '분석이 완료되었습니다! 맞춤형 견적서를 생성해드렸어요.',
+      timestamp: new Date().toLocaleTimeString().slice(0, 5),
+      quotation: {
+        ...quotation,
+        goal: formData.goal,
+        keywords: formData.keywords.length > 0 ? formData.keywords : quotation.keywords
+      }
+    }
+    setMessages(prev => [...prev, botMessage])
+  }
+
+  const generateDirectQuotation = (categoryName) => {
+    const botMessage = {
+      id: messages.length + 2,
+      type: 'bot',
+      message: `${categoryName} 분야의 견적서를 생성해드렸습니다.`,
+      timestamp: new Date().toLocaleTimeString().slice(0, 5),
+      quotation: {
+        ...quotation,
+        category: categoryName
+      }
+    }
+    setMessages(prev => [...prev, botMessage])
+  }
+
+  const handleKeywordSelect = (keyword) => {
+    const newKeywords = formData.keywords.includes(keyword)
+      ? formData.keywords.filter(k => k !== keyword)
+      : [...formData.keywords, keyword]
     
-    if (isLoggedIn) {
-      navigate('/matching-request');
-    } else {
-      navigate(`/signup?returnTo=/matching-request`);
-    }
-  };
+    setFormData({ ...formData, keywords: newKeywords })
+  }
 
-  const handleSignupCTA = () => {
-    navigate('/signup?returnTo=/matching');
-  };
+  const handleSubmitKeywords = () => {
+    const message = `선택된 키워드: ${formData.keywords.join(', ')}`
+    handleSendMessage(message)
+  }
 
-  return (
-    <div className="matching-page">
-      <div className="container">
-        {/* Header Section */}
-        <div className="matching-header text-center mt-12 mb-12">
-          <h1 className="h2 mb-4">당신에게 딱 맞는 전문가를 찾았어요! 🎯</h1>
-          <div className="user-requirements card" style={{ maxWidth: '600px', margin: '0 auto' }}>
-            <h3 className="h5 mb-4">요청 정보</h3>
-            <div className="requirements-grid">
-              <div className="requirement-item">
-                <span className="requirement-label">학습 목표:</span>
-                <span className="requirement-value">{userData.skill || '정보 없음'}</span>
-              </div>
-              <div className="requirement-item">
-                <span className="requirement-label">예산:</span>
-                <span className="requirement-value">{userData.budget || '정보 없음'}</span>
-              </div>
-              <div className="requirement-item">
-                <span className="requirement-label">일정:</span>
-                <span className="requirement-value">{userData.schedule || '정보 없음'}</span>
-              </div>
-              <div className="requirement-item">
-                <span className="requirement-label">현재 직군:</span>
-                <span className="requirement-value">{userData.currentJob || '정보 없음'}</span>
-              </div>
-            </div>
+  const handleQuotationConfirm = (quotationData) => {
+    navigate('/experts/matched', { state: { quotation: quotationData } })
+  }
+
+  const renderMessage = (message) => {
+    if (message.type === 'user') {
+      return (
+        <div key={message.id} className="flex justify-end mb-md">
+          <div className="card" style={{ 
+            background: 'var(--primary-blue)', 
+            color: 'white', 
+            maxWidth: '70%',
+            marginLeft: 'auto'
+          }}>
+            <p>{message.message}</p>
+            <small className="text-gray-300">{message.timestamp}</small>
           </div>
         </div>
+      )
+    }
 
-        {/* Expert Cards */}
-        <div className="experts-section">
-          <h2 className="h3 mb-12 text-center">추천 전문가</h2>
-          
-          <div className="experts-grid-3x1">
-            {experts.map((expert, index) => (
-              <div 
-                key={expert.id} 
-                className={`expert-card-float expert-card-${index + 1} ${!isLoggedIn ? 'expert-card-signup' : ''}`}
-                style={{ 
-                  animationDelay: `${index * 0.2}s`,
-                  '--float-offset': `${(index - 1) * 10}px`
-                }}
-              >
-                <div className="expert-card-inner">
-                  <div className="expert-header">
-                    <div className="expert-avatar-large">{expert.avatar}</div>
-                    <div className="match-badge-float">{expert.matchPercentage}% 매칭</div>
+    return (
+      <div key={message.id} className="flex mb-md">
+        <div className="flex gap-md" style={{ maxWidth: '70%' }}>
+          <div style={{ 
+            width: '40px', 
+            height: '40px', 
+            background: 'var(--primary-blue)', 
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontSize: '1.2rem'
+          }}>
+            🤖
+          </div>
+          <div className="card">
+            <p className="mb-sm">{message.message}</p>
+            <small className="text-secondary">{message.timestamp}</small>
+            
+            {/* Options */}
+            {message.options && (
+              <div className="mt-md flex gap-sm flex-wrap">
+                {message.options.map((option, index) => (
+                  <button
+                    key={index}
+                    className="btn btn-outline btn-small"
+                    onClick={() => handleOptionClick(option)}
+                  >
+                    {option.text}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Categories */}
+            {message.categories && (
+              <div className="mt-md flex gap-sm flex-wrap">
+                {message.categories.map((category) => (
+                  <button
+                    key={category.id}
+                    className="btn btn-outline btn-small"
+                    onClick={() => handleSendMessage(category.name)}
+                  >
+                    {category.icon} {category.name}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Keywords Selection */}
+            {message.stepType === 'keywords' && (
+              <div className="mt-md">
+                <div className="flex gap-sm flex-wrap mb-md">
+                  {message.options.map((keyword, index) => (
+                    <button
+                      key={index}
+                      className={`btn btn-small ${formData.keywords.includes(keyword) ? 'btn-primary' : 'btn-secondary'}`}
+                      onClick={() => handleKeywordSelect(keyword)}
+                    >
+                      {keyword}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  className="btn btn-primary btn-small"
+                  onClick={handleSubmitKeywords}
+                  disabled={formData.keywords.length === 0}
+                >
+                  선택 완료
+                </button>
+              </div>
+            )}
+
+            {/* Button Options */}
+            {message.stepType === 'buttons' && (
+              <div className="mt-md flex gap-sm flex-wrap">
+                {message.options.map((option, index) => (
+                  <button
+                    key={index}
+                    className="btn btn-outline btn-small"
+                    onClick={() => handleSendMessage(option)}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Quotation */}
+            {message.quotation && (
+              <div className="card bg-gradient-blue mt-md">
+                <h4 className="mb-md">견적서</h4>
+                <div className="mb-md">
+                  <strong>분야:</strong> {message.quotation.category}
+                </div>
+                <div className="mb-md">
+                  <strong>기간:</strong> {message.quotation.duration}
+                </div>
+                <div className="mb-md">
+                  <strong>일정:</strong> {message.quotation.schedule}
+                </div>
+                <div className="mb-md">
+                  <strong>예산:</strong> ₩{message.quotation.budget.toLocaleString()}
+                </div>
+                <div className="mb-md">
+                  <strong>학습 키워드:</strong>
+                  <div className="flex gap-xs mt-sm flex-wrap">
+                    {message.quotation.keywords.map((keyword, index) => (
+                      <span key={index} className="badge badge-primary">{keyword}</span>
+                    ))}
                   </div>
-                  
-                  <div className="expert-info">
-                    <h3 className="expert-name">{expert.name}</h3>
-                    <p className="expert-title">{expert.title}</p>
-                    <p className="expert-company">{expert.company} • {expert.experience} 경력</p>
-                    
-                    <div className="expert-rating mb-4">
-                      <span className="rating">⭐ {expert.rating}</span>
-                      <span className="review-count">({expert.reviewCount}개 리뷰)</span>
-                    </div>
+                </div>
+                <button
+                  className="btn btn-primary btn-full mt-md"
+                  onClick={() => handleQuotationConfirm(message.quotation)}
+                >
+                  전문가 매칭 시작
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
-                    <div className="expert-specialties mb-4">
-                      {expert.specialties.slice(0, 4).map((specialty, idx) => (
-                        <span key={idx} className="specialty-tag">{specialty}</span>
-                      ))}
-                    </div>
+  return (
+    <div className="matching-page" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* Header */}
+      <div style={{ padding: '20px 0', borderBottom: '1px solid var(--gray-200)', background: 'white' }}>
+        <div className="container">
+          <h2>AI 매칭 상담</h2>
+        </div>
+      </div>
 
-                    <div className="expert-key-stats">
-                      <div className="stat">
-                        <span className="stat-label">💰</span>
-                        <span className="stat-value">{expert.price}</span>
-                      </div>
-                      <div className="stat">
-                        <span className="stat-label">⚡</span>
-                        <span className="stat-value">{expert.responseTime.split(' ')[1]}</span>
-                      </div>
-                    </div>
-
-                    <p className="expert-description">
-                      {expert.description.length > 100 
-                        ? expert.description.substring(0, 100) + '...' 
-                        : expert.description}
-                    </p>
-
-                    <div className="expert-actions">
-                      {isLoggedIn ? (
-                        <>
-                          <button 
-                            className="btn-secondary btn-xs"
-                            onClick={() => handleViewProfile(expert)}
-                          >
-                            프로필
-                          </button>
-                          <button 
-                            className="btn-primary btn-xs"
-                            onClick={() => handleMatchRequest(expert)}
-                          >
-                            매칭
-                          </button>
-                        </>
-                      ) : (
-                        <div className="signup-card-cta">
-                          <div className="signup-gradient-bg">
-                            <p className="signup-card-text">회원가입하고 프로필 열람</p>
-                            <button 
-                              className="btn-signup-card"
-                              onClick={handleSignupCTA}
-                            >
-                              무료 가입하기
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+      {/* Chat Area */}
+      <div style={{ flex: 1, overflow: 'auto', padding: '20px 0' }}>
+        <div className="container">
+          {messages.map(renderMessage)}
+          
+          {/* Typing Indicator */}
+          {isTyping && (
+            <div className="flex mb-md">
+              <div className="flex gap-md">
+                <div style={{ 
+                  width: '40px', 
+                  height: '40px', 
+                  background: 'var(--primary-blue)', 
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontSize: '1.2rem'
+                }}>
+                  🤖
+                </div>
+                <div className="card">
+                  <div className="flex gap-xs">
+                    <div className="typing-dot"></div>
+                    <div className="typing-dot"></div>
+                    <div className="typing-dot"></div>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Bottom CTA */}
-        <div className="bottom-cta text-center mt-16 mb-12">
-          <p className="text-base mb-6">마음에 드는 전문가가 없으신가요?</p>
-          <button 
-            className="btn-secondary"
-            onClick={() => navigate('/chat')}
-          >
-            다시 매칭받기
-          </button>
-        </div>
-
-        {/* Gradient Signup CTA for non-logged users */}
-        {!isLoggedIn && (
-          <div className="gradient-signup-cta">
-            <div className="gradient-cta-content">
-              <h3 className="gradient-cta-title">
-                회원가입 후 프로필 열람 또는 더 많은 전문가 찾아보기
-              </h3>
-              <p className="gradient-cta-subtitle">
-                간단한 가입으로 모든 기능을 이용해보세요
-              </p>
-              <button className="btn-gradient-large" onClick={handleSignupCTA}>
-                무료 회원가입하기
-              </button>
             </div>
-          </div>
-        )}
+          )}
+          
+          <div ref={chatEndRef} />
+        </div>
       </div>
 
+      {/* Input Area */}
+      {chatMode && (
+        <div style={{ borderTop: '1px solid var(--gray-200)', padding: '20px 0', background: 'white' }}>
+          <div className="container">
+            <form onSubmit={(e) => {
+              e.preventDefault()
+              if (currentInput.trim()) {
+                handleSendMessage(currentInput)
+              }
+            }}>
+              <div className="flex gap-md">
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="메시지를 입력하세요..."
+                  value={currentInput}
+                  onChange={(e) => setCurrentInput(e.target.value)}
+                  style={{ flex: 1 }}
+                />
+                <button type="submit" className="btn btn-primary">
+                  전송
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <style jsx>{`
-        .matching-page {
-          min-height: 100vh;
-          background: var(--gray-50);
-        }
-
-        .matching-header {
-          padding-top: 40px;
-        }
-
-        .user-requirements {
-          background: white;
-          text-align: left;
-        }
-
-        .requirements-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 16px;
-        }
-
-        @media (max-width: 768px) {
-          .requirements-grid {
-            grid-template-columns: 1fr;
-          }
-        }
-
-        .requirement-item {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .requirement-label {
-          font-size: 14px;
-          color: var(--gray-600);
-          font-weight: 500;
-        }
-
-        .requirement-value {
-          font-size: 16px;
-          color: var(--gray-800);
-          font-weight: 600;
-        }
-
-        /* Always Horizontal Layout */
-        .experts-grid-3x1 {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 20px;
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 40px 0;
-        }
-
-        @media (max-width: 1024px) {
-          .experts-grid-3x1 {
-            gap: 16px;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .experts-grid-3x1 {
-            gap: 12px;
-            padding: 20px 0;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .experts-grid-3x1 {
-            gap: 8px;
-            max-width: 100%;
-          }
-        }
-
-        /* Floating Cards with Glassmorphism */
-        .expert-card-float {
-          perspective: 1000px;
-          animation: float 6s ease-in-out infinite;
-        }
-
-        .expert-card-1 {
-          animation-delay: 0s;
-        }
-
-        .expert-card-2 {
-          animation-delay: 2s;
-        }
-
-        .expert-card-3 {
-          animation-delay: 4s;
-        }
-
-        @keyframes float {
-          0%, 100% {
-            transform: translateY(0px) rotateX(0deg) rotateY(0deg);
-          }
-          25% {
-            transform: translateY(-10px) rotateX(1deg) rotateY(-1deg);
-          }
-          50% {
-            transform: translateY(-5px) rotateX(0deg) rotateY(1deg);
-          }
-          75% {
-            transform: translateY(-15px) rotateX(-1deg) rotateY(0deg);
-          }
-        }
-
-        .expert-card-inner {
-          background: linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.9) 0%,
-            rgba(255, 255, 255, 0.7) 70%,
-            rgba(102, 126, 234, 0.1) 100%
-          );
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          border-radius: 20px;
-          padding: 20px;
-          box-shadow: 
-            0 8px 32px 0 rgba(31, 38, 135, 0.15),
-            inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          position: relative;
-          overflow: hidden;
-          min-height: 380px;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .expert-card-inner::after {
-          content: '';
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          height: 80px;
-          background: linear-gradient(
-            180deg,
-            transparent 0%,
-            rgba(102, 126, 234, 0.15) 50%,
-            rgba(118, 75, 162, 0.2) 100%
-          );
-          border-radius: 0 0 20px 20px;
-          pointer-events: none;
-        }
-
-        @media (max-width: 768px) {
-          .expert-card-inner {
-            padding: 16px;
-            min-height: 320px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .expert-card-inner {
-            padding: 12px;
-            min-height: 280px;
-            border-radius: 16px;
-          }
-        }
-
-        .expert-card-inner::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: -100%;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(255, 255, 255, 0.2),
-            transparent
-          );
-          transition: left 0.5s;
-        }
-
-        .expert-card-float:hover .expert-card-inner {
-          transform: translateY(-8px);
-          box-shadow: 
-            0 20px 40px 0 rgba(31, 38, 135, 0.2),
-            inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
-        }
-
-        .expert-card-float:hover .expert-card-inner::before {
-          left: 100%;
-        }
-
-        .expert-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 16px;
-        }
-
-        .expert-avatar-large {
-          width: 50px;
-          height: 50px;
+        .typing-dot {
+          width: 8px;
+          height: 8px;
           border-radius: 50%;
-          background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 20px;
-          color: white;
-          box-shadow: 0 4px 15px rgba(46, 111, 242, 0.3);
+          background-color: var(--gray-400);
+          animation: typing 1.4s infinite;
         }
-
-        @media (max-width: 480px) {
-          .expert-avatar-large {
-            width: 40px;
-            height: 40px;
-            font-size: 16px;
-          }
-        }
-
-        .match-badge {
-          background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
-          color: white;
-          padding: 6px 12px;
-          border-radius: 20px;
-          font-size: 12px;
-          font-weight: 600;
-        }
-
-        .expert-name {
-          font-size: 20px;
-          font-weight: 700;
-          color: var(--gray-800);
-          margin: 0 0 4px 0;
-        }
-
-        .expert-title {
-          font-size: 16px;
-          color: var(--primary-blue);
-          font-weight: 600;
-          margin: 0 0 4px 0;
-        }
-
-        .expert-company {
-          font-size: 14px;
-          color: var(--gray-600);
-          margin: 0 0 12px 0;
-        }
-
-        .expert-rating {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-bottom: 16px;
-        }
-
-        .rating {
-          font-size: 14px;
-          font-weight: 600;
-        }
-
-        .review-count {
-          font-size: 14px;
-          color: var(--gray-600);
-        }
-
-        .match-badge-float {
-          background: linear-gradient(135deg, var(--success), #15d177);
-          color: white;
-          padding: 6px 12px;
-          border-radius: 20px;
-          font-size: 12px;
-          font-weight: 600;
-          box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
-        }
-
-        .expert-info {
-          text-align: left;
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .expert-name {
-          font-size: 18px;
-          font-weight: 700;
-          margin: 0 0 4px 0;
-        }
-
-        @media (max-width: 768px) {
-          .expert-name {
-            font-size: 16px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .expert-name {
-            font-size: 14px;
-          }
-        }
-
-        .expert-title {
-          font-size: 14px;
-          margin: 0 0 4px 0;
-        }
-
-        @media (max-width: 480px) {
-          .expert-title {
-            font-size: 12px;
-          }
-        }
-
-        .expert-company {
-          font-size: 12px;
-          margin: 0 0 8px 0;
-        }
-
-        @media (max-width: 480px) {
-          .expert-company {
-            font-size: 11px;
-          }
-        }
-
-        .expert-rating {
-          font-size: 12px;
-        }
-
-        @media (max-width: 480px) {
-          .expert-rating {
-            font-size: 11px;
-          }
-        }
-
-        .expert-specialties {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 4px;
-        }
-
-        .specialty-tag {
-          background: rgba(46, 111, 242, 0.1);
-          color: var(--primary-blue);
-          padding: 2px 8px;
-          border-radius: 12px;
-          font-size: 10px;
-          font-weight: 500;
-          border: 1px solid rgba(46, 111, 242, 0.2);
-        }
-
-        @media (max-width: 480px) {
-          .specialty-tag {
-            font-size: 9px;
-            padding: 1px 6px;
-          }
-        }
-
-        .expert-key-stats {
-          display: flex;
-          gap: 12px;
-          margin-bottom: 12px;
-          padding: 8px;
-          background: rgba(255, 255, 255, 0.5);
-          border-radius: 8px;
-          backdrop-filter: blur(10px);
-        }
-
-        @media (max-width: 480px) {
-          .expert-key-stats {
-            gap: 8px;
-            padding: 6px;
-          }
-        }
-
-        .stat {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-        }
-
-        .stat-label {
-          font-size: 12px;
-        }
-
-        @media (max-width: 480px) {
-          .stat-label {
-            font-size: 10px;
-          }
-        }
-
-        .stat-value {
-          font-size: 11px;
-          font-weight: 600;
-          color: var(--gray-800);
-        }
-
-        @media (max-width: 480px) {
-          .stat-value {
-            font-size: 10px;
-          }
-        }
-
-        .expert-description {
-          font-size: 12px;
-          line-height: 1.4;
-          color: var(--gray-700);
-          margin-bottom: 16px;
-          opacity: 0.9;
-          flex: 1;
-        }
-
-        @media (max-width: 480px) {
-          .expert-description {
-            font-size: 11px;
-            margin-bottom: 12px;
-          }
-        }
-
-        .expert-actions {
-          display: flex;
-          gap: 6px;
-          margin-top: auto;
-        }
-
-        .expert-actions button {
-          flex: 1;
-        }
-
-        /* Signup Card CTA */
-        .signup-card-cta {
-          margin-top: auto;
-          margin-bottom: -20px;
-          margin-left: -20px;
-          margin-right: -20px;
-          margin-bottom: -20px;
-        }
-
-        @media (max-width: 768px) {
-          .signup-card-cta {
-            margin-left: -16px;
-            margin-right: -16px;
-            margin-bottom: -16px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .signup-card-cta {
-            margin-left: -12px;
-            margin-right: -12px;
-            margin-bottom: -12px;
-          }
-        }
-
-        .signup-gradient-bg {
-          background: linear-gradient(
-            135deg,
-            rgba(102, 126, 234, 0.9) 0%,
-            rgba(118, 75, 162, 0.9) 100%
-          );
-          padding: 16px;
-          border-radius: 0 0 20px 20px;
-          text-align: center;
-          backdrop-filter: blur(10px);
-        }
-
-        @media (max-width: 480px) {
-          .signup-gradient-bg {
-            padding: 12px;
-            border-radius: 0 0 16px 16px;
-          }
-        }
-
-        .signup-card-text {
-          color: white;
-          font-size: 12px;
-          font-weight: 600;
-          margin: 0 0 12px 0;
-          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        }
-
-        @media (max-width: 480px) {
-          .signup-card-text {
-            font-size: 11px;
-            margin-bottom: 8px;
-          }
-        }
-
-        .btn-signup-card {
-          background: rgba(255, 255, 255, 0.2);
-          backdrop-filter: blur(5px);
-          color: white;
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          border-radius: 12px;
-          padding: 8px 16px;
-          font-size: 12px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          width: 100%;
-        }
-
-        .btn-signup-card:hover {
-          background: rgba(255, 255, 255, 0.3);
-          border-color: rgba(255, 255, 255, 0.5);
-          transform: translateY(-1px);
-        }
-
-        @media (max-width: 480px) {
-          .btn-signup-card {
-            padding: 6px 12px;
-            font-size: 11px;
-          }
-        }
-
-        /* Special styling for signup cards */
-        .expert-card-signup .expert-card-inner {
-          background: linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.9) 0%,
-            rgba(255, 255, 255, 0.8) 60%,
-            rgba(102, 126, 234, 0.05) 100%
-          );
-          border: 1px solid rgba(102, 126, 234, 0.2);
-        }
-
-        .expert-card-signup .expert-card-inner::after {
-          background: linear-gradient(
-            180deg,
-            transparent 0%,
-            rgba(102, 126, 234, 0.1) 30%,
-            rgba(118, 75, 162, 0.15) 100%
-          );
-        }
-
-        .btn-glass {
-          background: rgba(255, 255, 255, 0.2);
-          color: var(--gray-800);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          border-radius: 12px;
-          padding: 12px 20px;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          backdrop-filter: blur(10px);
-        }
-
-        .btn-glass:hover {
-          background: rgba(255, 255, 255, 0.3);
-          transform: translateY(-1px);
-        }
-
-        .btn-gradient {
-          background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
-          color: white;
-          border: none;
-          border-radius: 8px;
-          padding: 8px 16px;
-          font-size: 11px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .btn-gradient:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(46, 111, 242, 0.4);
-        }
-
-        @media (max-width: 480px) {
-          .btn-gradient {
-            padding: 6px 12px;
-            font-size: 10px;
-          }
-        }
-
-        /* Gradient Signup CTA */
-        .gradient-signup-cta {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          padding: 40px 0;
-          margin-top: 40px;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .gradient-signup-cta::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: linear-gradient(135deg, 
-            rgba(102, 126, 234, 0.9) 0%, 
-            rgba(118, 75, 162, 0.9) 100%);
-          backdrop-filter: blur(10px);
-        }
-
-        .gradient-cta-content {
-          position: relative;
-          z-index: 1;
-          text-align: center;
-          max-width: 800px;
-          margin: 0 auto;
-          padding: 0 24px;
-        }
-
-        .gradient-cta-title {
-          font-size: 28px;
-          font-weight: 800;
-          color: white;
-          margin: 0 0 12px 0;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .gradient-cta-subtitle {
-          font-size: 16px;
-          color: rgba(255, 255, 255, 0.9);
-          margin: 0 0 32px 0;
-          line-height: 1.5;
-        }
-
-        .btn-gradient-large {
-          background: rgba(255, 255, 255, 0.2);
-          backdrop-filter: blur(10px);
-          color: white;
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          border-radius: 16px;
-          padding: 16px 40px;
-          font-size: 18px;
-          font-weight: 700;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          text-transform: none;
-        }
-
-        .btn-gradient-large:hover {
-          background: rgba(255, 255, 255, 0.3);
-          border-color: rgba(255, 255, 255, 0.5);
-          transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        }
-
-        @media (max-width: 768px) {
-          .gradient-cta-title {
-            font-size: 22px;
-          }
-          
-          .gradient-cta-subtitle {
-            font-size: 14px;
-          }
-          
-          .btn-gradient-large {
-            padding: 14px 32px;
-            font-size: 16px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .gradient-signup-cta {
-            padding: 32px 0;
-          }
-          
-          .gradient-cta-content {
-            padding: 0 16px;
-          }
-          
-          .gradient-cta-title {
-            font-size: 18px;
-            margin-bottom: 8px;
-          }
-          
-          .gradient-cta-subtitle {
-            font-size: 13px;
-            margin-bottom: 24px;
-          }
-          
-          .btn-gradient-large {
-            padding: 12px 24px;
-            font-size: 14px;
-          }
+        
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+          0%, 60%, 100% { transform: scale(0.8); opacity: 0.5; }
+          30% { transform: scale(1.2); opacity: 1; }
         }
       `}</style>
     </div>
-  );
-};
+  )
+}
 
-export default MatchingPage;
+export default MatchingPage
