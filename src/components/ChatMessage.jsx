@@ -1,4 +1,5 @@
 import { categories, quotation } from '../data/mockData';
+import '../styles/ChatMessage.css';
 
 function ChatMessage({ 
   message, 
@@ -13,15 +14,7 @@ function ChatMessage({
   if (message.type === "user") {
     return (
       <div key={message.id} className="flex justify-end mb-md">
-        <div
-          className="card"
-          style={{
-            background: "var(--primary-blue)",
-            color: "white",
-            maxWidth: "70%",
-            marginLeft: "auto",
-          }}
-        >
+        <div className="card user-message-container" style={{ background: "var(--primary-blue)", color: "white" }}>
           <p>{message.message}</p>
           <small className="text-gray-300">{message.timestamp}</small>
         </div>
@@ -32,24 +25,12 @@ function ChatMessage({
   // 봇 메시지 렌더링
   return (
     <div key={message.id} className="flex mb-md">
-      <div className="flex gap-md" style={{ maxWidth: "70%" }}>
-        <div
-          style={{
-            width: "40px",
-            height: "40px",
-            background: "var(--primary-blue)",
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "white",
-            fontSize: "1.2rem",
-          }}
-        >
+      <div className="flex gap-md bot-message-container">
+        <div className="bot-avatar">
           🤖
         </div>
         <div className="card">
-          <p className="mb-sm" style={{ whiteSpace: "pre-line" }}>
+          <p className="mb-sm message-content">
             {message.message}
           </p>
           <small className="text-secondary">{message.timestamp}</small>
@@ -139,7 +120,7 @@ function ChatMessage({
 
           {/* 견적서 */}
           {message.quotation && (
-            <div className="card bg-gradient-blue mt-md">
+            <div className="card bg-gradient-blue quotation-card">
               <h4 className="mb-md">🎯 맞춤형 견적서</h4>
 
               {message.quotation.goal && (

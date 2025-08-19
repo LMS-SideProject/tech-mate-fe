@@ -1,0 +1,35 @@
+/* ChatMessage 컴포넌트 전용 스타일 */
+
+/* 사용자 메시지 */
+.user-message-container {
+  max-width: 70%;
+  margin-left: auto;
+}
+
+/* 봇 메시지 */
+.bot-message-container {
+  max-width: 70%;
+}
+
+.bot-avatar {
+  width: 40px;
+  height: 40px;
+  background: var(--primary-blue);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+/* 메시지 내용 */
+.message-content {
+  white-space: pre-line;
+}
+
+/* 견적서 카드 */
+.quotation-card {
+  margin-top: 1rem;
+}

@@ -4,6 +4,7 @@ import { categories } from "../data/mockData";
 import { generateDirectQuotation } from "../utils/quotationGenerator";
 import { useAIConsult } from "../hooks/useAIConsult";
 import ChatMessage from "../components/ChatMessage";
+import "../styles/MatchingPage.css";
 
 function MatchingPage() {
   const location = useLocation();
@@ -149,25 +150,16 @@ function MatchingPage() {
   };
 
   return (
-    <div
-      className="matching-page"
-      style={{ height: "100vh", display: "flex", flexDirection: "column" }}
-    >
+    <div className="matching-page">
       {/* Header */}
-      <div
-        style={{
-          padding: "20px 0",
-          borderBottom: "1px solid var(--gray-200)",
-          background: "white",
-        }}
-      >
+      <div className="matching-header">
         <div className="container">
           <h2>🤖 AI 매칭 상담</h2>
         </div>
       </div>
 
       {/* Chat Area */}
-      <div style={{ flex: 1, overflow: "auto", padding: "20px 0" }}>
+      <div className="chat-area">
         <div className="container">
           {messages.map((message) => (
             <ChatMessage
@@ -186,28 +178,16 @@ function MatchingPage() {
           {isTyping && (
             <div className="flex mb-md">
               <div className="flex gap-md">
-                <div
-                  style={{
-                    width: "40px",
-                    height: "40px",
-                    background: "var(--primary-blue)",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                    fontSize: "1.2rem",
-                  }}
-                >
+                <div className="ai-avatar">
                   🤖
                 </div>
                 <div className="card">
-                  <div className="flex gap-xs">
+                  <div className="typing-indicator">
                     <div className="typing-dot"></div>
                     <div className="typing-dot"></div>
                     <div className="typing-dot"></div>
                   </div>
-                  <small className="text-secondary mt-sm">
+                  <small className="text-secondary typing-message">
                     AI가 분석 중입니다...
                   </small>
                 </div>
@@ -221,13 +201,7 @@ function MatchingPage() {
 
       {/* Input Area */}
       {chatMode && currentStep === 0 && (
-        <div
-          style={{
-            borderTop: "1px solid var(--gray-200)",
-            padding: "20px 0",
-            background: "white",
-          }}
-        >
+        <div className="input-area">
           <div className="container">
             <form
               onSubmit={(e) => {
@@ -237,14 +211,13 @@ function MatchingPage() {
                 }
               }}
             >
-              <div className="flex gap-md">
+              <div className="message-form">
                 <input
                   type="text"
-                  className="form-input"
+                  className="form-input message-input"
                   placeholder="만들고 싶은 것을 구체적으로 설명해주세요..."
                   value={currentInput}
                   onChange={(e) => setCurrentInput(e.target.value)}
-                  style={{ flex: 1 }}
                 />
                 <button type="submit" className="btn btn-primary">
                   전송
@@ -254,39 +227,6 @@ function MatchingPage() {
           </div>
         </div>
       )}
-
-      <style>{`
-        .typing-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background-color: var(--gray-400);
-          animation: typing 1.4s infinite;
-        }
-
-        .typing-dot:nth-child(1) {
-          animation-delay: 0s;
-        }
-        .typing-dot:nth-child(2) {
-          animation-delay: 0.2s;
-        }
-        .typing-dot:nth-child(3) {
-          animation-delay: 0.4s;
-        }
-
-        @keyframes typing {
-          0%,
-          60%,
-          100% {
-            transform: scale(0.8);
-            opacity: 0.5;
-          }
-          30% {
-            transform: scale(1.2);
-            opacity: 1;
-          }
-        }
-      `}</style>
     </div>
   );
 }
