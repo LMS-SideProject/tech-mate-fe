@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { experts } from "../data/mockData";
-import { getExpertResponse } from "../utils/openai";
+import { getExpertResponse } from "../utils/openAI";
 
 function ChatPage() {
   const navigate = useNavigate();
@@ -50,13 +50,13 @@ function ChatPage() {
   const loadMessages = (expertId) => {
     // 로컬스토리지에서 해당 전문가와의 기존 대화 불러오기
     const storedMessages = localStorage.getItem(`chat_${expertId}`);
-    
+
     if (storedMessages) {
       // 기존 대화가 있으면 불러오기
       setMessages(JSON.parse(storedMessages));
     } else {
       // 새로운 대화 시작
-      const welcomeMessage = userCategory 
+      const welcomeMessage = userCategory
         ? `안녕하세요! ${userCategory} 분야 매칭 요청 감사합니다. 어떤 것부터 시작해볼까요?`
         : "안녕하세요! 매칭 요청 감사합니다. 어떤 것을 도와드릴까요?";
 
@@ -73,7 +73,7 @@ function ChatPage() {
           message: welcomeMessage,
           timestamp: "10:32",
           expertId: expertId,
-        }
+        },
       ];
       setMessages(initialMessages);
       // 초기 메시지를 로컬스토리지에 저장
@@ -112,9 +112,9 @@ function ChatPage() {
     const generateExpertResponse = async () => {
       try {
         // 최근 대화 컨텍스트 포함 (최대 6개 이전 메시지)
-        const recentMessages = messages.slice(-6).map(msg => ({
-          role: msg.type === 'user' ? 'user' : 'assistant',
-          content: msg.message
+        const recentMessages = messages.slice(-6).map((msg) => ({
+          role: msg.type === "user" ? "user" : "assistant",
+          content: msg.message,
         }));
 
         const expertResponse = await getExpertResponse(
@@ -132,12 +132,15 @@ function ChatPage() {
           timestamp: new Date().toLocaleTimeString().slice(0, 5),
           expertId: selectedConversation.expertId,
         };
-        
+
         const updatedMessages = [...messages, userMessage, expertMessage];
         setMessages(updatedMessages);
-        
+
         // 대화 내용을 로컬스토리지에 저장
-        localStorage.setItem(`chat_${selectedConversation.expertId}`, JSON.stringify(updatedMessages));
+        localStorage.setItem(
+          `chat_${selectedConversation.expertId}`,
+          JSON.stringify(updatedMessages)
+        );
       } catch (error) {
         // 에러 시 기본 응답
         const errorMessage = {
@@ -147,12 +150,15 @@ function ChatPage() {
           timestamp: new Date().toLocaleTimeString().slice(0, 5),
           expertId: selectedConversation.expertId,
         };
-        
+
         const updatedMessages = [...messages, userMessage, errorMessage];
         setMessages(updatedMessages);
-        
+
         // 에러 응답도 저장
-        localStorage.setItem(`chat_${selectedConversation.expertId}`, JSON.stringify(updatedMessages));
+        localStorage.setItem(
+          `chat_${selectedConversation.expertId}`,
+          JSON.stringify(updatedMessages)
+        );
       } finally {
         setIsTyping(false);
       }

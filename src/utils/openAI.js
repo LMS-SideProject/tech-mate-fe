@@ -1,13 +1,16 @@
+import { getExpertPrompt, getKeywordRecommendationPrompt } from '../prompts/aiPrompts';
+
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 const API_URL = "https://api.openai.com/v1/chat/completions";
 
-export const getExpertResponse = async (
-  userMessage,
-  expertName,
-  expertTitle,
-  userCategory = null,
-  conversationHistory = []
-) => {
+// 공통 OpenAI API 호출 함수
+const callOpenAI = async (messages, options = {}) => {
+  const {
+    maxTokens = 300,
+    temperature = 0.7,
+    model = "gpt-3.5-turbo"
+  } = options;
+
   try {
     const response = await fetch(API_URL, {
       method: "POST",
@@ -16,52 +19,10 @@ export const getExpertResponse = async (
         Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: `당신은 제주도에서 활동하는 ${expertName} ${expertTitle} 전문가입니다.
-
-**현재 상황:**
-- 매칭된 학습자와 프로젝트 기획/상담 중
-- ${userCategory ? `학습자 관심분야: ${userCategory}` : "관심분야 파악 필요"}
-- 결제 전 단계이므로 구체적 강의내용 제공 금지
-
-**당신의 성격과 말투:**
-- 실무 경험 풍부한 베테랑 전문가
-- 친근하지만 전문가다운 확신 있는 말투
-- 자신의 경험을 자연스럽게 언급
-- 질문으로 상대방 상황을 파악하는 스타일
-
-**답변 규칙:**
-✅ 30-50자 내외의 짧고 자연스러운 대화
-✅ 구체적인 숫자와 경험 기반 조언
-✅ "저는 보통...", "제 경험으로는..." 같은 표현 사용
-✅ 상대방 상황을 묻는 질문으로 마무리
-❌ 일반론이나 교과서적 설명 금지
-❌ "학습자의 요구사항을 고려하여..." 같은 AI스러운 표현 금지
-
-**가격/일정 가이드:**
-- 웹개발 기초과정: 6-8주, 120-180만원
-- 앱개발 과정: 8-12주, 200-300만원  
-- 1:1 수업: 시간당 8-12만원
-- 온라인 30% 할인, 오프라인 +교통비
-
-**제주 프로젝트 경험:**
-- 관광앱, 농가 관리시스템, 특산품 쇼핑몰 등 다수 진행
-- 제주창조경제혁신센터, 제주테크노파크 프로젝트 참여
-
-실제 전문가처럼 자연스럽고 확신있게 대화하세요. 상대방이 편안하게 느끼도록 하되, 전문성은 확실히 어필하세요.`,
-          },
-          // 이전 대화 컨텍스트 추가
-          ...conversationHistory,
-          {
-            role: "user",
-            content: userMessage,
-          },
-        ],
-        max_tokens: 300,
-        temperature: 0.7,
+        model,
+        messages,
+        max_tokens: maxTokens,
+        temperature,
       }),
     });
 
@@ -74,6 +35,74 @@ export const getExpertResponse = async (
   } catch (error) {
     console.error("OpenAI API 호출 오류:", error);
     throw error;
+  }
+};
+
+// 전문가 응답 생성
+export const getExpertResponse = async (
+  userMessage,
+  expertName,
+  expertTitle,
+  userCategory = null,
+  conversationHistory = []
+) => {
+  const messages = [
+    {
+      role: "system",
+      content: getExpertPrompt(expertName, expertTitle, userCategory),
+    },
+    ...conversationHistory,
+    {
+      role: "user",
+      content: userMessage,
+    },
+  ];
+
+  return await callOpenAI(messages, { maxTokens: 300 });
+};
+
+// 키워드 추천 생성
+export const getRecommendedKeywords = async (userGoal) => {
+  const messages = [
+    {
+      role: "system",
+      content: getKeywordRecommendationPrompt(),
+    },
+    {
+      role: "user",
+      content: `사용자가 만들고 싶어하는 것: "${userGoal}"`,
+    },
+  ];
+
+  try {
+    const aiResponse = await callOpenAI(messages, { maxTokens: 500 });
+    
+    try {
+      const parsed = JSON.parse(aiResponse);
+      return {
+        keywords: parsed.keywords,
+        explanation: parsed.explanation,
+      };
+    } catch (parseError) {
+      console.error("JSON 파싱 오류:", parseError);
+      // 파싱 실패시 기본 키워드 반환
+      return {
+        keywords: [
+          "HTML/CSS",
+          "JavaScript",
+          "기초 프로그래밍",
+          "프로젝트 관리",
+        ],
+        explanation: "기본적인 웹 개발 기술을 추천드립니다.",
+      };
+    }
+  } catch (error) {
+    console.error("키워드 추천 API 호출 오류:", error);
+    // API 호출 실패시 기본 키워드 반환
+    return {
+      keywords: ["HTML/CSS", "JavaScript", "기초 프로그래밍", "프로젝트 관리"],
+      explanation: "기본적인 웹 개발 기술을 추천드립니다.",
+    };
   }
 };
 
