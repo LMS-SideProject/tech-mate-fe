@@ -1,11 +1,15 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { experts, quotation } from '../data/mockData'
 
 function MatchedExpertListPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [selectedExpert, setSelectedExpert] = useState(null)
+  
+  // 전달받은 견적서 정보
+  const quotationData = location.state?.quotation
   
   // 매칭된 전문가 (상위 3명)
   const matchedExperts = experts.slice(0, 3).map(expert => ({
@@ -29,7 +33,7 @@ function MatchedExpertListPage() {
     
     alert(`${selectedExpert.name} 전문가에게 매칭 요청을 보냈습니다!`)
     setShowProfileModal(false)
-    navigate('/chat/expert/' + selectedExpert.id)
+    navigate('/chat', { state: { quotation: quotationData } })
   }
 
   const handleNavigateNext = (direction) => {
