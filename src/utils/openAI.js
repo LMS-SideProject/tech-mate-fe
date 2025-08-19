@@ -1,4 +1,4 @@
-import { getExpertPrompt, getKeywordRecommendationPrompt } from '../prompts/aiPrompts';
+import { getExpertPrompt, getKeywordRecommendationPrompt, getLearningDurationPrompt } from '../prompts/aiPrompts';
 
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 const API_URL = "https://api.openai.com/v1/chat/completions";
@@ -80,6 +80,7 @@ export const getRecommendedKeywords = async (userGoal) => {
     try {
       const parsed = JSON.parse(aiResponse);
       return {
+        category: parsed.category,
         keywords: parsed.keywords,
         explanation: parsed.explanation,
       };
@@ -87,6 +88,7 @@ export const getRecommendedKeywords = async (userGoal) => {
       console.error("JSON 파싱 오류:", parseError);
       // 파싱 실패시 기본 키워드 반환
       return {
+        category: "웹 개발",
         keywords: [
           "HTML/CSS",
           "JavaScript",
@@ -100,8 +102,60 @@ export const getRecommendedKeywords = async (userGoal) => {
     console.error("키워드 추천 API 호출 오류:", error);
     // API 호출 실패시 기본 키워드 반환
     return {
+      category: "웹 개발",
       keywords: ["HTML/CSS", "JavaScript", "기초 프로그래밍", "프로젝트 관리"],
       explanation: "기본적인 웹 개발 기술을 추천드립니다.",
+    };
+  }
+};
+
+// 학습 기간 제안 생성
+export const getSuggestedDuration = async (formData) => {
+  const { goal, keywords, schedule, experience } = formData;
+  
+  const messages = [
+    {
+      role: "system",
+      content: getLearningDurationPrompt(),
+    },
+    {
+      role: "user",
+      content: `
+목표: ${goal}
+선택된 기술: ${keywords.join(', ')}
+학습 일정: ${schedule}
+경험 수준: ${experience}
+
+위 정보를 바탕으로 적절한 학습 기간을 제안해주세요.`,
+    },
+  ];
+
+  try {
+    const aiResponse = await callOpenAI(messages, { maxTokens: 400 });
+    
+    try {
+      const parsed = JSON.parse(aiResponse);
+      return {
+        duration: parsed.duration,
+        reasoning: parsed.reasoning,
+        milestones: parsed.milestones || [],
+      };
+    } catch (parseError) {
+      console.error("학습 기간 JSON 파싱 오류:", parseError);
+      // 파싱 실패시 기본 기간 반환
+      return {
+        duration: "3개월",
+        reasoning: "선택하신 기술과 경험 수준을 고려하여 3개월 정도의 학습 기간을 추천드립니다.",
+        milestones: ["1개월차: 기초 학습", "2개월차: 심화 학습", "3개월차: 프로젝트 완성"],
+      };
+    }
+  } catch (error) {
+    console.error("학습 기간 제안 API 호출 오류:", error);
+    // API 호출 실패시 기본 기간 반환
+    return {
+      duration: "3개월",
+      reasoning: "선택하신 기술과 경험 수준을 고려하여 3개월 정도의 학습 기간을 추천드립니다.",
+      milestones: ["1개월차: 기초 학습", "2개월차: 심화 학습", "3개월차: 프로젝트 완성"],
     };
   }
 };

@@ -1,5 +1,32 @@
 // AI 프롬프트 템플릿 모음
-// 1. ai 매칭 상담 -> 키워드 추천 프롬프트
+
+// 1. AI 학습 기간 제안 프롬프트
+export const getLearningDurationPrompt = () => {
+  return `당신은 제주도 테크메이트 플랫폼의 AI 상담사입니다.
+사용자의 정보를 분석하여 적절한 학습 기간을 제안해주세요.
+
+**분석 요소:**
+✅ 선택된 기술 스택의 복잡도와 학습 난이도
+✅ 사용자의 현재 경험 수준 (초급/중급/고급)
+✅ 주간 학습 일정 (주 1회, 주 2회, 주 3회, 매일)
+✅ 목표 프로젝트의 복잡도
+
+**기간 산정 기준:**
+- 초급자 기준: HTML/CSS (1개월), JavaScript (2개월), React (2-3개월), 백엔드 (3-4개월)
+- 중급자: 기존 기간의 70% 적용
+- 고급자: 기존 기간의 50% 적용
+- 주간 일정에 따른 조정: 주1회(+50%), 주2회(기본), 주3회(-20%), 매일(-40%)
+
+**응답 형식:**
+반드시 다음 JSON 형식으로만 응답하세요:
+{
+  "duration": "3개월",
+  "reasoning": "React와 Node.js를 포함한 풀스택 개발을 초급자가 주 2회 학습할 경우, 충분한 실습 시간을 고려하여 3개월이 적절합니다.",
+  "milestones": ["1개월차: HTML/CSS/JS 기초", "2개월차: React 기본", "3개월차: 프로젝트 완성"]
+}`;
+};
+
+// 2. ai 매칭 상담 -> 키워드 추천 프롬프트  
 export const getKeywordRecommendationPrompt = () => {
   return `당신은 제주도 테크메이트 플랫폼의 AI 상담사입니다. 
 사용자가 만들고 싶어하는 것을 분석해서 필요한 학습 키워드를 추천해주세요.
@@ -13,17 +40,27 @@ export const getKeywordRecommendationPrompt = () => {
 **응답 형식:**
 반드시 다음 JSON 형식으로만 응답하세요:
 {
+  "category": "웹 개발",
   "keywords": ["HTML/CSS", "JavaScript", "React", "Node.js", "데이터베이스", "UI/UX 디자인"],
   "explanation": "쇼핑몰 웹사이트 제작에 필요한 핵심 기술들을 선별했습니다."
 }
 
-**키워드 카테고리 예시:**
-- 프론트엔드: HTML/CSS, JavaScript, React, Vue.js, TypeScript
-- 백엔드: Node.js, Python, Java, 데이터베이스, API 개발
+**카테고리 분류 기준:**
+- "웹 개발": 웹사이트, 웹앱, 쇼핑몰, 블로그, 포트폴리오 사이트
+- "AI/ML": 인공지능, 머신러닝, 딥러닝, 챗봇, 이미지 인식
+- "모바일 앱": 모바일 앱, 안드로이드, iOS 앱
+- "데이터 분석": 데이터 분석, 시각화, 대시보드, 통계
+- "디자인": UI/UX 디자인, 그래픽 디자인, 브랜딩
+- "게임 개발": 게임, 인터랙티브 콘텐츠
+- "영상 제작": 영상 편집, 애니메이션, 동영상
+- "마케팅": 디지털 마케팅, SNS 마케팅, 광고
+
+**키워드 예시:**
+- 웹 개발: HTML/CSS, JavaScript, React, Vue.js, Node.js, 데이터베이스
+- AI/ML: Python, TensorFlow, PyTorch, 머신러닝, 딥러닝
 - 모바일: React Native, Flutter, Swift, Kotlin
-- 데이터: Python, SQL, 데이터 분석, 머신러닝, 시각화
-- 디자인: Figma, Photoshop, UI/UX 디자인, 프로토타이핑
-- 기타: Git, AWS, 프로젝트 관리, 협업 도구`;
+- 데이터 분석: Python, SQL, Pandas, 데이터 시각화
+- 디자인: Figma, Photoshop, UI/UX 디자인, 프로토타이핑`;
 };
 // 2. 전문가 채팅 프롬프트
 export const getExpertPrompt = (expertName, expertTitle, userCategory) => {

@@ -60,23 +60,23 @@ function MatchedExpertListPage() {
           <div className="grid grid-cols-2 gap-lg">
             <div>
               <div className="mb-md">
-                <span className="text-secondary">카테고리:</span> <strong>{quotation.category}</strong>
+                <span className="text-secondary">카테고리:</span> <strong>{(quotationData || quotation).category}</strong>
               </div>
               <div className="mb-md">
-                <span className="text-secondary">교육 기간:</span> <strong>{quotation.duration}</strong>
+                <span className="text-secondary">교육 기간:</span> <strong>{(quotationData || quotation).duration}</strong>
               </div>
               <div>
-                <span className="text-secondary">일정:</span> <strong>{quotation.schedule}</strong>
+                <span className="text-secondary">일정:</span> <strong>{(quotationData || quotation).schedule}</strong>
               </div>
             </div>
             <div>
               <div className="mb-md">
-                <span className="text-secondary">예산:</span> <strong>₩{quotation.budget.toLocaleString()}</strong>
+                <span className="text-secondary">예산:</span> <strong>₩{(quotationData || quotation).budget.toLocaleString()}</strong>
               </div>
               <div className="mb-md">
                 <span className="text-secondary">학습 키워드:</span>
                 <div className="flex gap-xs mt-sm" style={{ flexWrap: 'wrap' }}>
-                  {quotation.keywords.map((keyword, index) => (
+                  {(quotationData || quotation).keywords.map((keyword, index) => (
                     <span key={index} className="badge badge-primary">{keyword}</span>
                   ))}
                 </div>
@@ -89,7 +89,7 @@ function MatchedExpertListPage() {
         <div className="mb-lg">
           <span className="text-secondary">현재 선택된 분야:</span>
           <span className="badge badge-primary ml-sm" style={{ fontSize: '1rem', padding: '8px 16px' }}>
-            {quotation.category}
+            {(quotationData || quotation).category}
           </span>
         </div>
 
